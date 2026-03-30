@@ -78,9 +78,8 @@ export default function App() {
 
       {/* Footer */}
       <footer style={{ textAlign: "center", padding: "20px 0", fontSize: 12, color: COLORS.secondary, borderTop: `1px solid ${COLORS.border}`, background: COLORS.white }}>
-        Fresha BDM Commission Calculator — Internal Use Only
+        Fresha BDM Commission Calculator - Internal Use Only
       </footer>
     </div>
   );
 }
- 
