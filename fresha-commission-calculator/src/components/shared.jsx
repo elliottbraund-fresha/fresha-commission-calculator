@@ -127,7 +127,7 @@ export function CurrencySelector({ currencyCode, setCurrencyCode, exchangeRate, 
           const c = CURRENCIES.find(cur => cur.code === v);
           if (c) setExchangeRate(c.rate);
         }}
-        options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} — ${c.name}` }))}
+        options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} - ${c.name}` }))}
       />
       <InputField label="Exchange Rate (vs 1 USD)" value={exchangeRate} onChange={setExchangeRate} step="0.01" />
     </div>
