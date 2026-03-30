@@ -1,20 +1,47 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import { ChevronRight, TrendingUp, TrendingDown, Zap, Shield, Info, Award, AlertTriangle } from 'lucide-react';
-import { COLORS, cardStyle } from './shared.jsx';
-import { ACCELERATOR_TABLE, generateCurveData } from '../utils/commissionCalc.js';
+import { COLORS, cardStyle, SelectField } from './shared.jsx';
+import { ACCELERATOR_TABLE, generateCurveData, getAcceleratorMultiplier } from '../utils/commissionCalc.js';
+
+const ROLE_CONFIG = {
+  "BDE":      { threshold: 70, cap: 175, decel: "2x", accel: "Deal count based" },
+  "BDM":      { threshold: 70, cap: 175, decel: "2x", accel: "Deal count based" },
+  "Snr BDM":  { threshold: 70, cap: 175, decel: "2x", accel: "Deal count based" },
+  "TL BDM":   { threshold: 80, cap: 125, decel: "2x", accel: "2x" },
+  "Head of BDM": { threshold: 80, cap: 125, decel: "2x", accel: "2x" },
+  "VP of Sales": { threshold: 80, cap: 112.5, decel: "4x", accel: "BDMs on target based" },
+};
 
 export default function CommissionStructure() {
-  const curveData = useMemo(generateCurveData, []);
+  const [selectedRole, setSelectedRole] = useState("BDM");
+  const [selectedDeals, setSelectedDeals] = useState(5);
+
+  const roleConfig = ROLE_CONFIG[selectedRole];
+  const isBDMRole = ["BDE", "BDM", "Snr BDM"].includes(selectedRole);
+  const accelMultiplier = isBDMRole ? getAcceleratorMultiplier(selectedDeals) : 2.0;
+
+  const curveData = useMemo(
+    () => generateCurveData({
+      role: selectedRole,
+      dealCount: selectedDeals,
+      threshold: roleConfig.threshold,
+      cap: roleConfig.cap,
+    }),
+    [selectedRole, selectedDeals, roleConfig.threshold, roleConfig.cap]
+  );
+
+  // Calculate max earnings % for the Y axis
+  const maxEarnings = curveData.length > 0 ? Math.max(...curveData.map(d => d.earnings)) : 250;
 
   const concepts = [
-    { title: "Threshold", range: "70%", desc: "Minimum attainment before any commission is earned. Below this, variable earnings = $0.", icon: <Shield size={22} />, color: COLORS.secondary },
-    { title: "Decelerator", range: "70% – 100%", desc: "Above threshold but below target. A reduced rate applies (2x multiplier on shortfall) to penalise underperformance.", icon: <TrendingDown size={22} />, color: COLORS.elton },
-    { title: "Accelerator", range: "100% – 175%", desc: "Above target. Commission rate increases — rewarding over-performance. For BDMs, the accelerator is variable based on deal count.", icon: <TrendingUp size={22} />, color: COLORS.ceelo },
-    { title: "Cap", range: "175%", desc: "Maximum commission ceiling. Earnings flatten beyond this point regardless of further attainment.", icon: <Zap size={22} />, color: COLORS.prince },
+    { title: "Threshold", range: `${roleConfig.threshold}%`, desc: `Minimum attainment before any commission is earned. Below ${roleConfig.threshold}%, variable earnings = $0.`, icon: <Shield size={22} />, color: COLORS.secondary },
+    { title: "Decelerator", range: `${roleConfig.threshold}% â 100%`, desc: `Above threshold but below target. A standard 2x decelerator applies â for every 1% below target, you lose 2% of variable pay. Linear from 0% payout at threshold to 100% at target.`, icon: <TrendingDown size={22} />, color: COLORS.elton },
+    { title: "Accelerator", range: `100% â ${roleConfig.cap}%`, desc: isBDMRole ? `Above target. The accelerator multiplier depends on deal count (currently ${accelMultiplier}x for ${selectedDeals} deals). Rewards over-performance.` : `Above target. A fixed ${roleConfig.accel} accelerator applies to reward over-performance.`, icon: <TrendingUp size={22} />, color: COLORS.ceelo },
+    { title: "Cap", range: `${roleConfig.cap}%`, desc: "Maximum commission ceiling. Earnings flatten beyond this point regardless of further attainment.", icon: <Zap size={22} />, color: COLORS.prince },
   ];
 
   return (
@@ -40,9 +67,34 @@ export default function CommissionStructure() {
         </div>
       </div>
 
-      {/* Curve */}
+      {/* Curve with dropdowns */}
       <div style={cardStyle}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.dark, marginBottom: 20 }}>Commission Curve</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 20 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.dark, margin: 0 }}>Commission Curve</h2>
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-end" }}>
+            <div style={{ minWidth: 140 }}>
+              <SelectField label="Job Title" value={selectedRole} onChange={setSelectedRole} options={
+                Object.keys(ROLE_CONFIG).map(r => ({ value: r, label: r }))
+              } />
+            </div>
+            {isBDMRole && (
+              <div style={{ minWidth: 130 }}>
+                <SelectField label="Deal Count" value={String(selectedDeals)} onChange={v => setSelectedDeals(Number(v))} options={[
+                  { value: "1", label: "1â3 deals" },
+                  { value: "4", label: "4 deals" },
+                  { value: "5", label: "5 deals" },
+                  { value: "6", label: "6 deals" },
+                  { value: "7", label: "7 deals" },
+                  { value: "8", label: "8+ deals" },
+                ]} />
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ padding: "8px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+          <Info size={16} />
+          {selectedRole}: Threshold {roleConfig.threshold}% | Decelerator 2x | Accelerator {isBDMRole ? `${accelMultiplier}x (${selectedDeals} deals)` : roleConfig.accel} | Cap {roleConfig.cap}%
+        </div>
         <ResponsiveContainer width="100%" height={340}>
           <AreaChart data={curveData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
             <defs>
@@ -53,24 +105,24 @@ export default function CommissionStructure() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis dataKey="achievement" tickFormatter={v => `${v}%`} label={{ value: "Achievement to Goal", position: "insideBottom", offset: -5, style: { fontSize: 12, fill: COLORS.secondary } }} />
-            <YAxis tickFormatter={v => `${v}%`} label={{ value: "Variable Earnings", angle: -90, position: "insideLeft", style: { fontSize: 12, fill: COLORS.secondary } }} />
+            <YAxis tickFormatter={v => `${v}%`} domain={[0, Math.ceil(maxEarnings / 50) * 50]} label={{ value: "Variable Earnings %", angle: -90, position: "insideLeft", style: { fontSize: 12, fill: COLORS.secondary } }} />
             <Tooltip formatter={(v) => [`${v.toFixed(1)}%`, "Earnings"]} labelFormatter={l => `Achievement: ${l}%`} />
-            <ReferenceArea x1={0} x2={70} fill="#F3F4F6" fillOpacity={0.8} />
-            <ReferenceArea x1={70} x2={100} fill={COLORS.elton} fillOpacity={0.07} />
-            <ReferenceArea x1={100} x2={175} fill={COLORS.ceelo} fillOpacity={0.07} />
-            <ReferenceArea x1={175} x2={200} fill={COLORS.prince20} fillOpacity={0.5} />
-            <ReferenceLine x={70} stroke={COLORS.hucknall} strokeDasharray="4 4" label={{ value: "70% Threshold", position: "top", style: { fontSize: 11, fill: COLORS.hucknall } }} />
+            <ReferenceArea x1={0} x2={roleConfig.threshold} fill="#F3F4F6" fillOpacity={0.8} />
+            <ReferenceArea x1={roleConfig.threshold} x2={100} fill={COLORS.elton} fillOpacity={0.07} />
+            <ReferenceArea x1={100} x2={roleConfig.cap} fill={COLORS.ceelo} fillOpacity={0.07} />
+            <ReferenceArea x1={roleConfig.cap} x2={200} fill={COLORS.prince20} fillOpacity={0.5} />
+            <ReferenceLine x={roleConfig.threshold} stroke={COLORS.hucknall} strokeDasharray="4 4" label={{ value: `${roleConfig.threshold}% Threshold`, position: "top", style: { fontSize: 11, fill: COLORS.hucknall } }} />
             <ReferenceLine x={100} stroke={COLORS.ceelo} strokeDasharray="4 4" label={{ value: "100% Target", position: "top", style: { fontSize: 11, fill: COLORS.ceelo } }} />
-            <ReferenceLine x={175} stroke={COLORS.prince} strokeDasharray="4 4" label={{ value: "175% Cap", position: "top", style: { fontSize: 11, fill: COLORS.prince } }} />
+            <ReferenceLine x={roleConfig.cap} stroke={COLORS.prince} strokeDasharray="4 4" label={{ value: `${roleConfig.cap}% Cap`, position: "top", style: { fontSize: 11, fill: COLORS.prince } }} />
             <Area type="monotone" dataKey="earnings" stroke={COLORS.prince} strokeWidth={3} fill="url(#curveGrad)" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
         <div style={{ display: "flex", gap: 20, justifyContent: "center", marginTop: 12, flexWrap: "wrap" }}>
           {[
-            { label: "No Commission (0–70%)", color: "#D1D5DB" },
-            { label: "Decelerator (70–100%)", color: COLORS.elton },
-            { label: "Accelerator (100–175%)", color: COLORS.ceelo },
-            { label: "Cap (175%+)", color: COLORS.prince },
+            { label: `No Commission (0â${roleConfig.threshold}%)`, color: "#D1D5DB" },
+            { label: `Decelerator (${roleConfig.threshold}â100%)`, color: COLORS.elton },
+            { label: `Accelerator (100â${roleConfig.cap}%)`, color: COLORS.ceelo },
+            { label: `Cap (${roleConfig.cap}%+)`, color: COLORS.prince },
           ].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: COLORS.secondary }}>
               <div style={{ width: 12, height: 12, borderRadius: 3, background: l.color }} /> {l.label}
@@ -189,18 +241,13 @@ export default function CommissionStructure() {
               </tr>
             </thead>
             <tbody>
-              {[
-                { role: "BDE, BDM, Snr BDM", threshold: "70%", cap: "175%", decel: "2x", accel: "Deal count based" },
-                { role: "TL BDM", threshold: "80%", cap: "125%", decel: "2x", accel: "2x" },
-                { role: "Head of BDM", threshold: "80%", cap: "125%", decel: "2x", accel: "2x" },
-                { role: "VP of Sales", threshold: "80%", cap: "112.5%", decel: "4x", accel: "BDMs on target based" },
-              ].map((row, i) => (
-                <tr key={i} style={{ background: i % 2 === 1 ? COLORS.light : COLORS.white }}>
-                  <td style={{ padding: "12px 16px", fontWeight: 500 }}>{row.role}</td>
-                  <td style={{ padding: "12px 16px" }}>{row.threshold}</td>
-                  <td style={{ padding: "12px 16px" }}>{row.cap}</td>
-                  <td style={{ padding: "12px 16px" }}>{row.decel}</td>
-                  <td style={{ padding: "12px 16px" }}>{row.accel}</td>
+              {Object.entries(ROLE_CONFIG).map(([role, cfg], i) => (
+                <tr key={role} style={{ background: i % 2 === 1 ? COLORS.light : COLORS.white }}>
+                  <td style={{ padding: "12px 16px", fontWeight: 500 }}>{role}</td>
+                  <td style={{ padding: "12px 16px" }}>{cfg.threshold}%</td>
+                  <td style={{ padding: "12px 16px" }}>{cfg.cap}%</td>
+                  <td style={{ padding: "12px 16px" }}>{cfg.decel}</td>
+                  <td style={{ padding: "12px 16px" }}>{cfg.accel}</td>
                 </tr>
               ))}
             </tbody>
