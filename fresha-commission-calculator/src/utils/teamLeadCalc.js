@@ -12,13 +12,16 @@ export function getTLPersonalPct(count) {
 
 export function calcTLCommission({
   rampMonth, baseBDMTarget, bdmCount, bdmTargets, bdmActuals,
-  tlPersonalMRR, tlOneTimeRevenue, exchangeRate,
+  bdmNames, tlPersonalMRR, tlOneTimeRevenue, variablePay, exchangeRate,
 }) {
   const result = {
     personalTarget: 0, totalTarget: 0, totalActual: 0,
     achievementPct: 0, zone: "Threshold", commission: 0,
+    multiplier: 0, multiplierLabel: "N/A",
     performanceBonus: 0, totalUSD: 0, totalLocal: 0,
     rampMessage: null, bdmBreakdown: [],
+    thresholdMissed: false, capHit: false,
+    variablePay: variablePay || 0,
   };
 
   if (rampMonth === "M0") {
@@ -36,46 +39,64 @@ export function calcTLCommission({
   for (let i = 0; i < bdmCount; i++) {
     const t = bdmTargets[i] || baseBDMTarget;
     const a = bdmActuals[i] || 0;
+    const name = (bdmNames && bdmNames[i]) ? bdmNames[i] : "BDM #" + (i + 1);
     sumBDMTargets += t;
     sumBDMActuals += a;
     result.bdmBreakdown.push({
       index: i + 1,
+      name,
       target: t,
       actual: a,
       achievement: t > 0 ? (a / t) * 100 : 0,
     });
   }
 
+  result.bdmBreakdown.unshift({
+    index: 0,
+    name: "Team Lead",
+    target: result.personalTarget,
+    actual: tlPersonalMRR,
+    achievement: result.personalTarget > 0 ? (tlPersonalMRR / result.personalTarget) * 100 : 0,
+    isTeamLead: true,
+  });
+
   result.totalTarget = result.personalTarget + sumBDMTargets;
   result.totalActual = tlPersonalMRR + sumBDMActuals;
 
-  if (result.totalTarget <= 0) return result;
+  if (result.totalTarget <= 0 || !variablePay) return result;
 
   const achievement = (result.totalActual / result.totalTarget) * 100;
   result.achievementPct = achievement;
 
-  const targetCommission = result.totalTarget;
-
-  // TL: threshold 80%, cap 125%, decel 2x, accel 2x
   if (achievement < 80) {
     result.zone = "Threshold";
     result.commission = 0;
+    result.multiplier = 0;
+    result.multiplierLabel = "Below Threshold";
+    result.thresholdMissed = true;
   } else if (achievement <= 100) {
     result.zone = "Decelerator";
-    const progressInZone = (achievement - 80) / 20;
-    const deceleratedProgress = Math.pow(progressInZone, 2);
-    result.commission = targetCommission * deceleratedProgress;
+    const payoutPct = (achievement - 80) / 20;
+    result.commission = variablePay * payoutPct;
+    result.multiplier = 2;
+    result.multiplierLabel = "Decelerator 2x";
   } else {
-    result.commission = targetCommission;
+    result.commission = variablePay;
     const cappedAchievement = Math.min(achievement, 125);
     const aboveTarget = cappedAchievement - 100;
-    const acceleratorBonus = (aboveTarget / 100) * targetCommission * 2;
+    const acceleratorBonus = (aboveTarget / 100) * variablePay * 2;
     result.commission += acceleratorBonus;
+    result.multiplier = 2;
+    result.multiplierLabel = "Accelerator 2x";
 
-    result.zone = achievement >= 125 ? "Cap" : "Accelerator";
+    if (achievement >= 125) {
+      result.zone = "Cap";
+      result.capHit = true;
+    } else {
+      result.zone = "Accelerator";
+    }
   }
 
-  // Performance bonus on TL's own one-time revenue
   if (tlOneTimeRevenue > 0) {
     if (result.achievementPct >= 100) {
       result.performanceBonus = tlOneTimeRevenue * 0.4;
