@@ -48,7 +48,7 @@ export default function RetentionAdjustmentTab() {
                 <li>If retained MRR exceeds original, no adjustment (no positive upside).</li>
                 <li>If retained MRR drops, commission is fully recalculated from the new MRR value.</li>
                 <li>If the threshold is missed after adjustment, the full original commission is clawed back.</li>
-                <li>Deal count does not change â only MRR value is adjusted.</li>
+                <li>Deal count does not change - only MRR value is adjusted.</li>
               </ul>
             </div>
           </div>
@@ -67,10 +67,11 @@ export default function RetentionAdjustmentTab() {
           <InputField label="Monthly Variable Pay (USD)" value={variablePay} onChange={setVariablePay} prefix="$" />
           <InputField label="Monthly MRR Target (USD)" value={monthlyTarget} onChange={setMonthlyTarget} prefix="$" />
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
-          <InputField label="Original MRR Signed â Month 0 (USD)" value={originalMRR} onChange={setOriginalMRR} prefix="$" />
-          <InputField label="MRR Retained â End of Month 4 (USD)" value={retainedMRR} onChange={setRetainedMRR} prefix="$" />
+          <InputField label="Original MRR Signed - Month 0 (USD)" value={originalMRR} onChange={setOriginalMRR} prefix="$" />
+          <InputField label="MRR Retained - End of Month 4 (USD)" value={retainedMRR} onChange={setRetainedMRR} prefix="$" />
           <InputField label="One-Time Revenue Sold (USD)" value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix="$" />
           <InputField label="Current Month's Commission (USD)" value={currentMonthCommission} onChange={setCurrentMonthCommission} prefix="$" />
+          <div style={{ marginTop: -12, marginBottom: 16, fontSize: 12, color: COLORS.secondary, fontStyle: "italic" }}>Leave this blank if you don't know and you'll see the net impact to your commission</div>
           <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
@@ -117,8 +118,8 @@ export default function RetentionAdjustmentTab() {
                 <CheckCircle size={22} color={COLORS.ceelo} />
                 <span style={{ fontSize: 15, fontWeight: 600, color: COLORS.ceelo }}>
                   {result.retentionPct > 100
-                    ? "Retained MRR exceeds original â no adjustment applied."
-                    : "Retention target met â no clawback applied."}
+                    ? "Retained MRR exceeds original - no adjustment applied."
+                    : "Retention target met - no clawback applied."}
                 </span>
               </div>
             ) : (
@@ -139,25 +140,25 @@ export default function RetentionAdjustmentTab() {
                   <div style={{ padding: 16, background: COLORS.light, borderRadius: 8, textAlign: "center" }}>
                     <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 4 }}>Original Achievement</div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.dark }}>
-                      {result.originalResult ? pct(result.originalResult.achievementPct) : "â"}
+                      {result.originalResult ? pct(result.originalResult.achievementPct) : "-"}
                     </div>
                     {result.originalResult && <ZoneBadge zone={result.originalResult.zone} />}
                   </div>
                   <div style={{ padding: 16, background: COLORS.light, borderRadius: 8, textAlign: "center" }}>
                     <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 4 }}>Adjusted Achievement</div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: result.thresholdMissed ? COLORS.hucknall : COLORS.dark }}>
-                      {result.recalculatedResult ? pct(result.recalculatedResult.achievementPct) : "â"}
+                      {result.recalculatedResult ? pct(result.recalculatedResult.achievementPct) : "-"}
                     </div>
                     {result.recalculatedResult && <ZoneBadge zone={result.recalculatedResult.zone} />}
                   </div>
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
-                  <span style={{ color: COLORS.secondary, fontSize: 14 }}>Original Commission (Base)</span>
+                  <span style={{ color: COLORS.secondary, fontSize: 14 }}>Original Commission</span>
                   <DualCurrency usd={result.originalCommission} code={currencyCode} rate={exchangeRate} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
-                  <span style={{ color: COLORS.secondary, fontSize: 14 }}>Recalculated Commission (Base)</span>
+                  <span style={{ color: COLORS.secondary, fontSize: 14 }}>Recalculated Commission</span>
                   <DualCurrency usd={result.recalculatedCommission} code={currencyCode} rate={exchangeRate} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
