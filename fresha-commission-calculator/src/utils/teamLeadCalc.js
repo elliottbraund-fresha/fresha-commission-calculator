@@ -76,19 +76,26 @@ export function calcTLCommission({
   result.achievementPct = achievement;
 
   // TL: threshold 80%, cap 125%, decel 2x, accel 2x
+  // 2x decel: for every 1% below target, lose 2% of variable pay.
+  // Formula: variableEarnings% = 100 - (100 - achievement) * 2
   if (achievement < 80) {
     result.zone = "Threshold";
     result.commission = 0;
     result.multiplier = 0;
     result.multiplierLabel = "Below Threshold";
     result.thresholdMissed = true;
-  } else if (achievement <= 100) {
+  } else if (achievement < 100) {
     result.zone = "Decelerator";
-    // Standard 2x decelerator: linear from 0 at 80% to 100% at 100%
-    const payoutPct = (achievement - 80) / 20;
-    result.commission = variablePay * payoutPct;
+    const decelMultiplier = 2;
+    const variableEarningsPct = Math.max(0, 100 - (100 - achievement) * decelMultiplier);
+    result.commission = variablePay * (variableEarningsPct / 100);
     result.multiplier = 2;
     result.multiplierLabel = "Decelerator 2x";
+  } else if (achievement === 100) {
+    result.zone = "At Target";
+    result.commission = variablePay;
+    result.multiplier = 1;
+    result.multiplierLabel = "At Target";
   } else {
     result.commission = variablePay; // 100% at target
     const cappedAchievement = Math.min(achievement, 125);
