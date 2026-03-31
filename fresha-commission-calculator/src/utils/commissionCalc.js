@@ -59,86 +59,95 @@ export function calcBDMCommission({
   const achievement = (actualMRR / effectiveTarget) * 100;
   result.achievementPct = achievement;
 
-  // Decelerator is standard 2x: at threshold (70%) you earn 0%, at 100% you earn 100% of variable.
-  // Linear interpolation: earnings% = (achievement - 70) / 30 * 100, but multiplied by 2x decel factor.
-  // Actually, 2x decelerator means: for every 1% below target, you lose 2% of variable pay.
-  // At 100% achievement = 100% variable. At 70% achievement (30% below) = 100% - 30%*2 = 40%...
-  // Wait - let me reconsider. Standard 2x decelerator:
-  // The payout at threshold (70%) = 0. At target (100%) = 100% of variable.
-  // The "2x" means the deceleration rate is 2x the standard rate.
-  // Linear from 70% to 100%: payout = (achievement - 70) / 30 * variablePay
-  // This gives 0 at 70% and variablePay at 100%. The "2x" refers to the fact that
-  // for the 30% range below target, you only earn from 0 to 100% (not 70% to 100%).
+  // 2x Decelerator: for every 1% below target, lose 2% of variable pay.
+  // Formula: variableEarnings% = 100 - (100 - achievement) * 2
+  // At 100% achievement = 100% variable. At 90% = 80%. At 70% threshold = 40%.
+  // Below 70% threshold = no commission at all.
 
   if (achievement < 70) {
     result.zone = "Threshold";
     result.baseCommission = 0;
     result.multiplier = 0;
     result.multiplierLabel = "Below Threshold";
-    // Calculate how much MRR needed to reach threshold
     result.mrrToThreshold = effectiveTarget * 0.7 - actualMRR;
-    result.earningsAtThreshold = 0; // at exactly 70% you just start earning
+    result.earningsAtThreshold = variablePay * (100 - (100 - 70) * 2) / 100; // 40% at threshold
     result.mrrToTarget = effectiveTarget - actualMRR;
     result.earningsAtTarget = variablePay;
-    result.insightMessage = `You have not reached the 70% threshold. You need ${Math.ceil(result.mrrToThreshold)} more MRR to start earning commission. Reaching the threshold earns you your first variable pay. Reaching 100% target earns you the full ${variablePay.toFixed(2)} variable pay.`;
+    result.insightMessage = `You have not reached the 70% threshold. You need ${Math.ceil(result.mrrToThreshold)} more MRR to start earning commission. At threshold you would earn ${(result.earningsAtThreshold).toFixed(2)} (40% of variable). At 100% target you earn the full ${variablePay.toFixed(2)}.`;
   } else if (achievement <= 100) {
-    result.zone = "Decelerator";
-    // Standard 2x decel: linear from 0% at 70% to 100% at 100%
-    const payoutPct = (achievement - 70) / 30;
+    result.zone = achievement === 100 ? "At Target" : "Decelerator";
+    // 2x decel: earnings% = 100 - (100 - achievement) * 2
+    const decelMultiplier = 2;
+    const variableEarningsPct = Math.max(0, 100 - (100 - achievement) * decelMultiplier);
+    const payoutPct = variableEarningsPct / 100;
     result.baseCommission = variablePay * payoutPct;
     result.multiplier = 2;
-    result.multiplierLabel = "Decelerator 2x";
-    // Insight: how much more MRR to reach target
+    result.multiplierLabel = achievement === 100 ? "At Target" : "Decelerator 2x";
+    result.variableEarningsPct = variableEarningsPct;
     result.mrrToTarget = effectiveTarget - actualMRR;
     result.earningsAtTarget = variablePay;
     const additionalEarnings = result.earningsAtTarget - result.baseCommission;
-    result.insightMessage = `You need ${Math.ceil(result.mrrToTarget)} more MRR to reach 100% target. This would earn you an additional ${additionalEarnings.toFixed(2)} in variable pay (total ${variablePay.toFixed(2)}).`;
+    if (achievement === 100) {
+      result.insightMessage = `You have hit 100% target. Your full variable pay of ${variablePay.toFixed(2)} is earned.`;
+    } else {
+      result.insightMessage = `Your variable earnings are ${variableEarningsPct.toFixed(1)}% (2x decel applied). You need ${Math.ceil(result.mrrToTarget)} more MRR to reach 100% target for an additional ${additionalEarnings.toFixed(2)} (total ${variablePay.toFixed(2)}).`;
+    }
   } else {
     // Above target - accelerator zone
     result.baseCommission = variablePay; // 100% of variable at target
 
-    const cappedAchievement = Math.min(achievement, 175);
-    const aboveTarget = cappedAchievement - 100;
+    // M1 ramp: accelerator not unlocked until full target is achieved
+    const actualFullTargetAchievement = (actualMRR / monthlyTarget) * 100;
+    const m1AccelLocked = rampMonth === "M1" && actualFullTargetAchievement < 100;
 
-    const accelMultiplier = getAcceleratorMultiplier(dealCount);
-    result.multiplier = accelMultiplier;
-    result.multiplierLabel = `Accelerator ${accelMultiplier}x`;
-
-    const acceleratorBonus = (aboveTarget / 100) * variablePay * accelMultiplier;
-    result.baseCommission += acceleratorBonus;
-
-    // Cap requires BOTH 175%+ achievement AND 8+ deals (2x accelerator)
-    const isFullCap = achievement >= 175 && dealCount >= 8;
-    result.zone = isFullCap ? "Cap" : "Accelerator";
-
-    // Insights for above-target
-    if (isFullCap) {
-      result.insightMessage = `You have hit the 175% cap with 8+ deals (2x accelerator). Maximum variable earnings achieved.`;
-    } else if (achievement >= 175 && dealCount < 8) {
-      // Achievement is maxed but accelerator is not - more deals needed
-      const nextAccel = getAcceleratorMultiplier(dealCount + 1);
-      const maxAbove = 175 - 100;
-      const currentCommission = result.baseCommission;
-      const newCommission = variablePay + (maxAbove / 100) * variablePay * nextAccel;
-      const additionalEarnings = newCommission - currentCommission;
-      result.insightMessage = `You have reached 175% achievement but your accelerator is ${accelMultiplier}x (${dealCount} deals). You can only unlock more commission by signing more deals. One more deal would increase your accelerator to ${nextAccel}x, earning you an additional ${additionalEarnings.toFixed(2)}.`;
+    if (m1AccelLocked) {
+      // Cap at 100% variable, no accelerator bonus
+      result.zone = "At Target";
+      result.multiplier = 1;
+      result.multiplierLabel = "Accelerator locked (M1)";
+      result.variableEarningsPct = 100;
+      result.insightMessage = `M1 Ramp: You've exceeded your reduced target but accelerators don't unlock until you hit the full target of ${monthlyTarget}. You need ${Math.ceil(monthlyTarget - actualMRR)} more MRR to unlock accelerators.`;
     } else {
-      // Below 175% achievement
-      if (dealCount >= 8) {
-        result.mrrToCap = effectiveTarget * 1.75 - actualMRR;
-        result.insightMessage = `You have maxed the accelerator at ${accelMultiplier}x. You need ${Math.ceil(result.mrrToCap)} more MRR to hit the 175% cap.`;
+      const cappedAchievement = Math.min(achievement, 175);
+      const aboveTarget = cappedAchievement - 100;
+
+      const accelMultiplier = getAcceleratorMultiplier(dealCount);
+      result.multiplier = accelMultiplier;
+      result.multiplierLabel = `Accelerator ${accelMultiplier}x`;
+
+      const acceleratorBonus = (aboveTarget / 100) * variablePay * accelMultiplier;
+      result.baseCommission += acceleratorBonus;
+      result.variableEarningsPct = (result.baseCommission / variablePay) * 100;
+
+      // Cap requires BOTH 175%+ achievement AND 8+ deals (2x accelerator)
+      const isFullCap = achievement >= 175 && dealCount >= 8;
+      result.zone = isFullCap ? "Cap" : "Accelerator";
+
+      if (isFullCap) {
+        result.insightMessage = `You have hit the 175% cap with 8+ deals (2x accelerator). Maximum variable earnings achieved.`;
+      } else if (achievement >= 175 && dealCount < 8) {
+        const nextAccel = getAcceleratorMultiplier(dealCount + 1);
+        const maxAbove = 175 - 100;
+        const currentCommission = result.baseCommission;
+        const newCommission = variablePay + (maxAbove / 100) * variablePay * nextAccel;
+        const additionalEarnings = newCommission - currentCommission;
+        result.insightMessage = `You have reached 175% achievement but your accelerator is ${accelMultiplier}x (${dealCount} deals). One more deal would increase to ${nextAccel}x, earning an additional ${additionalEarnings.toFixed(2)}.`;
       } else {
-        // Calculate value of one more deal at average MRR
-        const avgMRRPerDeal = dealCount > 0 ? actualMRR / dealCount : 0;
-        if (avgMRRPerDeal > 0) {
-          const newDealCount = dealCount + 1;
-          const newActualMRR = actualMRR + avgMRRPerDeal;
-          const newAchievement = Math.min((newActualMRR / effectiveTarget) * 100, 175);
-          const newAbove = newAchievement - 100;
-          const newAccel = getAcceleratorMultiplier(newDealCount);
-          const newCommission = variablePay + (newAbove / 100) * variablePay * newAccel;
-          result.additionalEarningsOneMoreDeal = newCommission - result.baseCommission;
-          result.insightMessage = `One more deal at your average MRR of ${Math.round(avgMRRPerDeal)} would earn you an additional ${result.additionalEarningsOneMoreDeal.toFixed(2)} (new accelerator: ${newAccel}x).`;
+        if (dealCount >= 8) {
+          result.mrrToCap = effectiveTarget * 1.75 - actualMRR;
+          result.insightMessage = `You have maxed the accelerator at ${accelMultiplier}x. You need ${Math.ceil(result.mrrToCap)} more MRR to hit the 175% cap.`;
+        } else {
+          const avgMRRPerDeal = dealCount > 0 ? actualMRR / dealCount : 0;
+          if (avgMRRPerDeal > 0) {
+            const newDealCount = dealCount + 1;
+            const newActualMRR = actualMRR + avgMRRPerDeal;
+            const newAchievement = Math.min((newActualMRR / effectiveTarget) * 100, 175);
+            const newAbove = newAchievement - 100;
+            const newAccel = getAcceleratorMultiplier(newDealCount);
+            const newCommission = variablePay + (newAbove / 100) * variablePay * newAccel;
+            result.additionalEarningsOneMoreDeal = newCommission - result.baseCommission;
+            result.insightMessage = `One more deal at your average MRR of ${Math.round(avgMRRPerDeal)} would earn you an additional ${result.additionalEarningsOneMoreDeal.toFixed(2)} (new accelerator: ${newAccel}x).`;
+          }
         }
       }
     }
@@ -169,7 +178,6 @@ export function calcBDMCommission({
 export function generateCurveData({ role = "BDM", dealCount = 5, threshold = 70, cap = 175 } = {}) {
   const isBDM = ["BDE", "BDM", "Snr BDM"].includes(role);
   const accelMultiplier = isBDM ? getAcceleratorMultiplier(dealCount) : 2.0;
-  const decelRange = 100 - threshold;
 
   const data = [];
   for (let x = 0; x <= 200; x += 1) {
@@ -177,9 +185,9 @@ export function generateCurveData({ role = "BDM", dealCount = 5, threshold = 70,
     if (x < threshold) {
       y = 0;
     } else if (x <= 100) {
-      // Standard 2x decelerator: linear from 0 at threshold to 100 at target
-      const progress = (x - threshold) / decelRange;
-      y = progress * 100;
+      // 2x decelerator: earnings% = 100 - (100 - x) * 2
+      const decelMultiplier = 2;
+      y = Math.max(0, 100 - (100 - x) * decelMultiplier);
     } else if (x <= cap) {
       const above = x - 100;
       y = 100 + above * accelMultiplier;
