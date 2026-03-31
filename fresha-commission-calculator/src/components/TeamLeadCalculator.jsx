@@ -155,7 +155,7 @@ export default function TeamLeadCalculatorTab() {
 
               <div className="grid-4-col" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
                 {[
-                  { label: "Personal Target", value: fmt(result.personalTarget), sub: `${(getTLPersonalPct(bdmCount) * 100).toFixed(0)}% of base` },
+                  { label: "Personal Target", value: fmt(result.personalTarget), sub: `${(getTLPersonalPct(bdmCount) * 100).toFixed(0)}% of bdm target` },
                   { label: "Total Target", value: fmt(result.totalTarget) },
                   { label: "Total Actual", value: fmt(result.totalActual) },
                   { label: "Achievement", value: pct(result.achievementPct), color: result.achievementPct >= 100 ? COLORS.ceelo : result.achievementPct >= 80 ? COLORS.elton : COLORS.hucknall },
@@ -178,7 +178,7 @@ export default function TeamLeadCalculatorTab() {
                     {result.zone === "Threshold" || result.zone === "Decelerator" ? "Decelerator" : "Accelerator"}
                   </div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.prince }}>
-                    {result.zone === "Threshold" ? "â" : `${result.multiplier}x`}
+                    {result.zone === "Threshold" ? "-" : `${result.multiplier}x`}
                   </div>
                   <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: 2 }}>{result.multiplierLabel}</div>
                 </div>
@@ -227,6 +227,16 @@ export default function TeamLeadCalculatorTab() {
                             </td>
                           </tr>
                         ))}
+                        <tr style={{ background: COLORS.dark }}>
+                          <td style={{ padding: "10px 14px", fontWeight: 700, color: COLORS.white }}>Total</td>
+                          <td style={{ padding: "10px 14px", fontWeight: 700, color: COLORS.white }}>{fmt(result.totalTarget)}</td>
+                          <td style={{ padding: "10px 14px", fontWeight: 700, color: COLORS.white }}>{fmt(result.totalActual)}</td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{ fontWeight: 700, color: COLORS.white }}>
+                              {result.totalTarget > 0 ? pct(result.achievementPct) : "N/A"}
+                            </span>
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
