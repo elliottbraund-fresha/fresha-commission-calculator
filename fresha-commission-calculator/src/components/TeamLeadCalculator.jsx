@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Users, Info, AlertTriangle, Award } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, inputStyle, InputField, SelectField, DualCurrency, ZoneBadge, CurrencySelector } from './shared.jsx';
-import { fmt, pct } from '../utils/currencies.js';
+import { fmt, fmtLocal, pct, CURRENCIES } from '../utils/currencies.js';
 import { calcTLCommission, getTLPersonalPct } from '../utils/teamLeadCalc.js';
 
 export default function TeamLeadCalculatorTab() {
   const [rampMonth, setRampMonth] = useState("M1+");
-  const [variablePay, setVariablePay] = useState(5000);
+  const [variablePayInput, setVariablePayInput] = useState(5000);
+  const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [baseBDMTarget, setBaseBDMTarget] = useState(10000);
   const [bdmCount, setBdmCount] = useState(3);
   const [bdmTargets, setBdmTargets] = useState([10000, 10000, 10000]);
@@ -17,6 +18,11 @@ export default function TeamLeadCalculatorTab() {
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [result, setResult] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const variablePay = variablePayInLocal && currencyCode !== "USD" && exchangeRate > 0
+    ? variablePayInput / exchangeRate
+    : variablePayInput;
 
   const handleBdmCountChange = (count) => {
     const n = Math.max(0, Math.min(15, typeof count === "string" ? parseInt(count, 10) || 0 : count));
@@ -31,10 +37,15 @@ export default function TeamLeadCalculatorTab() {
   };
 
   const handleCalc = () => {
-    setResult(calcTLCommission({
+    const r = calcTLCommission({
       rampMonth, baseBDMTarget, bdmCount, bdmTargets, bdmActuals,
       bdmNames, tlPersonalMRR, tlOneTimeRevenue, variablePay, exchangeRate,
-    }));
+    });
+    setResult(r);
+    if (r.achievementPct > 100 && r.zone !== "No Commission" && r.zone !== "Threshold") {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
   };
 
   return (
@@ -50,7 +61,16 @@ export default function TeamLeadCalculatorTab() {
               ]} />
               <InputField label="Base BDM Target (USD)" value={baseBDMTarget} onChange={setBaseBDMTarget} prefix="$" />
             </div>
-            <InputField label="Monthly Variable Pay (USD)" value={variablePay} onChange={setVariablePay} prefix="$" />
+            <InputField label={`Monthly Variable Pay (${variablePayInLocal && currencyCode !== "USD" ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && currencyCode !== "USD" ? (CURRENCIES.find(c => c.code === currencyCode)?.symbol || "$") : "$"} />
+            {currencyCode !== "USD" && (
+              <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                  <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
+                  Enter in {currencyCode}
+                </label>
+                {variablePayInLocal && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(variablePay, 2)} USD</span>}
+              </div>
+            )}
             <InputField label="Number of Quota-Carrying BDMs" value={bdmCount} onChange={handleBdmCountChange} min={0} />
 
             <div style={{ padding: "12px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16 }}>
@@ -116,12 +136,16 @@ export default function TeamLeadCalculatorTab() {
       {/* Results */}
       {result && (
         <div
-          className={result.zone === "Accelerator" ? "fade-in celebrate" : "fade-in"}
+          className={result.zone === "Accelerator" || result.zone === "Cap" ? "fade-in celebrate" : "fade-in"}
           style={{
             ...cardStyle,
-            borderTop: `4px solid ${result.zone === "Accelerator" ? COLORS.ceelo : result.zone === "Cap" ? COLORS.prince : result.zone === "Decelerator" ? COLORS.elton : COLORS.secondary}`,
+            borderTop: `4px solid ${result.zone === "Accelerator" ? COLORS.ceelo : result.zone === "Cap" ? COLORS.prince : result.zone === "At Target" ? COLORS.ceelo : result.zone === "Decelerator" ? COLORS.elton : COLORS.secondary}`,
+            position: "relative", overflow: "hidden",
           }}
         >
+          {showConfetti && (
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${COLORS.ceelo}, ${COLORS.prince}, ${COLORS.pink}, ${COLORS.ceelo})`, backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          )}
           {result.rampMessage ? (
             <div style={{ padding: 20, textAlign: "center" }}>
               <Info size={32} color={COLORS.prince} />
@@ -175,10 +199,10 @@ export default function TeamLeadCalculatorTab() {
                 </div>
                 <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>
-                    {result.zone === "Threshold" || result.zone === "Decelerator" ? "Decelerator" : "Accelerator"}
+                    {result.zone === "Threshold" || result.zone === "Decelerator" ? "Decelerator" : result.zone === "At Target" ? "Zone" : "Accelerator"}
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.prince }}>
-                    {result.zone === "Threshold" ? "-" : `${result.multiplier}x`}
+                  <div style={{ fontSize: 18, fontWeight: 700, color: result.zone === "At Target" ? COLORS.ceelo : COLORS.prince }}>
+                    {result.zone === "Threshold" ? "-" : result.zone === "At Target" ? "100%" : `${result.multiplier}x`}
                   </div>
                   <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: 2 }}>{result.multiplierLabel}</div>
                 </div>
@@ -192,10 +216,16 @@ export default function TeamLeadCalculatorTab() {
                 </div>
               </div>
 
-              <div style={{ padding: 20, background: result.zone === "Accelerator" ? `${COLORS.ceelo}11` : COLORS.light, borderRadius: 10, textAlign: "center", marginBottom: 24 }}>
+              <div style={{ padding: 20, background: (result.zone === "Accelerator" || result.zone === "At Target") ? `${COLORS.ceelo}11` : COLORS.light, borderRadius: 10, textAlign: "center", marginBottom: 24 }}>
                 <div style={{ fontSize: 13, color: COLORS.secondary, marginBottom: 6 }}>Total Payout</div>
                 <DualCurrency usd={result.totalUSD} code={currencyCode} rate={exchangeRate} large />
               </div>
+
+              {showConfetti && (
+                <div style={{ padding: "14px 16px", background: `${COLORS.ceelo}15`, borderRadius: 8, fontSize: 14, color: COLORS.ceelo, textAlign: "center", fontWeight: 600, marginBottom: 24 }}>
+                  ð Congratulations! Your team is above target!
+                </div>
+              )}
 
               {/* Full team breakdown table (TL + BDMs) */}
               {result.bdmBreakdown.length > 0 && (
