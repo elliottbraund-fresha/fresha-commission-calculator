@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import {
-  AreaChart, Area, XAxis, ResponsiveContainer, ReferenceLine,
+  AreaChart, Area, XAxis, ResponsiveContainer, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import { Calculator, Info, AlertTriangle, TrendingUp } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, InputField, SelectField, DualCurrency, ZoneBadge, CurrencySelector } from './shared.jsx';
@@ -98,7 +98,7 @@ export default function CommissionCalculatorTab() {
                         {calculated.zone === "Threshold" || calculated.zone === "Decelerator" ? "Decelerator Multiplier" : "Accelerator Multiplier"}
                       </div>
                       <div style={{ fontSize: 28, fontWeight: 700, color: COLORS.prince }}>
-                        {calculated.zone === "Threshold" ? "â" : `${calculated.multiplier}x`}
+                        {calculated.zone === "Threshold" ? "-" : `${calculated.multiplier}x`}
                       </div>
                       <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: 2 }}>
                         {calculated.multiplierLabel}
@@ -123,7 +123,7 @@ export default function CommissionCalculatorTab() {
                       <span style={{ fontWeight: 600, color: COLORS.dark }}>{fmt(calculated.variablePay, 2)}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
-                      <span style={{ color: COLORS.secondary, fontSize: 14 }}>Base Commission</span>
+                      <span style={{ color: COLORS.secondary, fontSize: 14 }}>Commission</span>
                       <DualCurrency usd={calculated.baseCommission} code={currencyCode} rate={exchangeRate} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
@@ -150,6 +150,10 @@ export default function CommissionCalculatorTab() {
                     <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.secondary, marginBottom: 8 }}>Your Position on the Curve</div>
                     <ResponsiveContainer width="100%" height={160}>
                       <AreaChart data={curveData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                        <ReferenceArea x1={0} x2={70} fill="#F3F4F6" fillOpacity={0.8} />
+                        <ReferenceArea x1={70} x2={100} fill={COLORS.elton} fillOpacity={0.08} />
+                        <ReferenceArea x1={100} x2={175} fill={COLORS.ceelo} fillOpacity={0.08} />
+                        <ReferenceArea x1={175} x2={200} fill={COLORS.prince} fillOpacity={0.08} />
                         <Area type="monotone" dataKey="earnings" stroke={COLORS.prince} strokeWidth={2} fill={COLORS.prince20} dot={false} />
                         <ReferenceLine x={Math.min(Math.round(calculated.achievementPct), 200)} stroke={COLORS.hucknall} strokeWidth={2} label={{ value: pct(calculated.achievementPct), position: "top", style: { fontSize: 11, fill: COLORS.hucknall, fontWeight: 700 } }} />
                         <XAxis dataKey="achievement" tickFormatter={v => `${v}%`} tick={{ fontSize: 10 }} />
