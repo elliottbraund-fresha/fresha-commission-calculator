@@ -13,7 +13,6 @@ const ROLE_CONFIG = {
   "Snr BDM":  { threshold: 70, cap: 175, decel: "2x", accel: "Deal count based" },
   "TL BDM":   { threshold: 80, cap: 125, decel: "2x", accel: "2x" },
   "Head of BDM": { threshold: 80, cap: 125, decel: "2x", accel: "2x" },
-  "VP of Sales": { threshold: 80, cap: 112.5, decel: "4x", accel: "BDMs on target based" },
 };
 
 export default function CommissionStructure() {
@@ -39,7 +38,7 @@ export default function CommissionStructure() {
 
   const concepts = [
     { title: "Threshold", range: `${roleConfig.threshold}%`, desc: `Minimum attainment before any commission is earned. Below ${roleConfig.threshold}%, variable earnings = $0.`, icon: <Shield size={22} />, color: COLORS.secondary },
-    { title: "Decelerator", range: `${roleConfig.threshold}% - 100%`, desc: `Above threshold but below target. A standard 2x decelerator applies - for every 1% below target, you lose 2% of variable pay. Linear from 0% payout at threshold to 100% at target.`, icon: <TrendingDown size={22} />, color: COLORS.elton },
+    { title: "Decelerator", range: `${roleConfig.threshold}% - 100%`, desc: `Above threshold but below target. A 2x decelerator applies - for every 1% below target, you lose 2% of variable pay. E.g. at 90% achievement, variable earnings = 80%.`, icon: <TrendingDown size={22} />, color: COLORS.elton },
     { title: "Accelerator", range: `100% - ${roleConfig.cap}%`, desc: isBDMRole ? `Above target. The accelerator multiplier depends on deal count (currently ${accelMultiplier}x for ${selectedDeals} deals). Rewards over-performance.` : `Above target. A fixed ${roleConfig.accel} accelerator applies to reward over-performance.`, icon: <TrendingUp size={22} />, color: COLORS.ceelo },
     { title: "Cap", range: `${roleConfig.cap}%`, desc: "Maximum commission ceiling. Earnings flatten beyond this point regardless of further attainment.", icon: <Zap size={22} />, color: COLORS.prince },
   ];
@@ -95,8 +94,8 @@ export default function CommissionStructure() {
           <Info size={16} />
           {selectedRole}: Threshold {roleConfig.threshold}% | Decelerator 2x | Accelerator {isBDMRole ? `${accelMultiplier}x (${selectedDeals} deals)` : roleConfig.accel} | Cap {roleConfig.cap}%
         </div>
-        <ResponsiveContainer width="100%" height={340}>
-          <AreaChart data={curveData} margin={{ top: 30, right: 30, left: 10, bottom: 10 }}>
+        <ResponsiveContainer width="100%" height={380}>
+          <AreaChart data={curveData} margin={{ top: 30, right: 30, left: 50, bottom: 35 }}>
             <defs>
               <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={COLORS.prince} stopOpacity={0.3} />
@@ -104,8 +103,8 @@ export default function CommissionStructure() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="achievement" tickFormatter={v => `${v}%`} label={{ value: "Achievement to Goal", position: "insideBottom", offset: -5, style: { fontSize: 12, fill: COLORS.secondary } }} />
-            <YAxis tickFormatter={v => `${v}%`} domain={[0, Math.ceil(maxEarnings / 50) * 50]} label={{ value: "Variable Earnings %", angle: -90, position: "insideLeft", style: { fontSize: 12, fill: COLORS.secondary } }} />
+            <XAxis dataKey="achievement" tickFormatter={v => `${v}%`} ticks={[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200]} tick={{ fontSize: 10 }} label={{ value: "Achievement to Goal", position: "insideBottom", offset: -20, style: { fontSize: 12, fill: COLORS.secondary } }} />
+            <YAxis tickFormatter={v => `${v}%`} domain={[0, Math.ceil(maxEarnings / 50) * 50]} label={{ value: "Variable Earnings %", angle: -90, position: "insideLeft", offset: -35, style: { fontSize: 12, fill: COLORS.secondary } }} />
             <Tooltip formatter={(v) => [`${v.toFixed(1)}%`, "Earnings"]} labelFormatter={l => `Achievement: ${l}%`} />
             <ReferenceArea x1={0} x2={roleConfig.threshold} fill="#F3F4F6" fillOpacity={0.8} />
             <ReferenceArea x1={roleConfig.threshold} x2={100} fill={COLORS.elton} fillOpacity={0.07} />
@@ -209,24 +208,24 @@ export default function CommissionStructure() {
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding: "12px 16px" }}><span style={{ fontWeight: 600, color: COLORS.ceelo }}>NEW</span> (Performance Bonus)</td>
+                <td style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.ceelo }}>Performance Bonus</td>
                 <td style={{ padding: "12px 16px" }}>90% of MRR Target</td>
                 <td style={{ padding: "12px 16px" }}>Uncapped</td>
-                <td style={{ padding: "12px 16px", fontWeight: 700 }}>20%</td>
+                <td style={{ padding: "12px 16px" }}>
+                  <div style={{ fontWeight: 700 }}>20%</div>
+                  <div style={{ fontSize: 12, color: COLORS.elton, marginTop: 2 }}>(10% in GCC)</div>
+                  <div style={{ fontSize: 12, color: COLORS.elton }}>(0% in Kosovo)</div>
+                </td>
               </tr>
               <tr style={{ background: COLORS.light }}>
-                <td style={{ padding: "12px 16px" }}><span style={{ fontWeight: 600, color: COLORS.prince }}>INCREASED</span> (Milestone Reward)</td>
+                <td style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.prince }}>Milestone Reward</td>
                 <td style={{ padding: "12px 16px" }}>100% of MRR Target</td>
                 <td style={{ padding: "12px 16px" }}>Uncapped</td>
-                <td style={{ padding: "12px 16px", fontWeight: 700 }}>40%</td>
-              </tr>
-              <tr>
-                <td colSpan={3} style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.elton }}><AlertTriangle size={14} style={{ verticalAlign: "middle", marginRight: 6 }} />Kosovo (Regional Exception)</td>
-                <td style={{ padding: "12px 16px", fontWeight: 700 }}>0% / 10%</td>
-              </tr>
-              <tr style={{ background: COLORS.light }}>
-                <td colSpan={3} style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.elton }}><AlertTriangle size={14} style={{ verticalAlign: "middle", marginRight: 6 }} />GCC (Regional Exception)</td>
-                <td style={{ padding: "12px 16px", fontWeight: 700 }}>10% / 20%</td>
+                <td style={{ padding: "12px 16px" }}>
+                  <div style={{ fontWeight: 700 }}>40%</div>
+                  <div style={{ fontSize: 12, color: COLORS.elton, marginTop: 2 }}>(20% in GCC)</div>
+                  <div style={{ fontSize: 12, color: COLORS.elton }}>(10% in Kosovo)</div>
+                </td>
               </tr>
             </tbody>
           </table>
