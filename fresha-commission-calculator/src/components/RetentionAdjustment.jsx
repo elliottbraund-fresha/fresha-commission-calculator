@@ -1,28 +1,30 @@
 import React, { useState } from 'react';
 import { RotateCcw, Info, CheckCircle, AlertTriangle } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, InputField, SelectField, DualCurrency, CurrencySelector, ZoneBadge } from './shared.jsx';
-import { fmt, fmtLocal, pct } from '../utils/currencies.js';
+import { fmt, fmtLocal, pct, CURRENCIES } from '../utils/currencies.js';
 import { calcRetention } from '../utils/retentionCalc.js';
 
 export default function RetentionAdjustmentTab() {
   const [role, setRole] = useState("BDM");
   const [rampMonth, setRampMonth] = useState("M2+");
-  const [variablePay, setVariablePay] = useState(3000);
+  const [variablePayInput, setVariablePayInput] = useState(3000);
+  const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
+  const [dealCount, setDealCount] = useState(5);
   const [originalMRR, setOriginalMRR] = useState(12000);
   const [retainedMRR, setRetainedMRR] = useState(9500);
-  const [dealCount, setDealCount] = useState(5);
-  const [oneTimeRevenue, setOneTimeRevenue] = useState(0);
-  const [currentMonthCommission, setCurrentMonthCommission] = useState(3000);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [result, setResult] = useState(null);
 
+  const variablePay = variablePayInLocal && currencyCode !== "USD" && exchangeRate > 0
+    ? variablePayInput / exchangeRate
+    : variablePayInput;
+
   const handleCalc = () => {
     setResult(calcRetention({
       originalMRR, retainedMRR, variablePay, dealCount,
-      monthlyTarget, rampMonth, role, oneTimeRevenue,
-      currentMonthCommission, exchangeRate,
+      monthlyTarget, rampMonth, role, exchangeRate,
     }));
   };
 
@@ -64,15 +66,21 @@ export default function RetentionAdjustmentTab() {
               { value: "M1", label: "M1 (Ramp)" }, { value: "M2+", label: "M2+ (Full)" },
             ]} />
           </div>
-          <InputField label="Monthly Variable Pay (USD)" value={variablePay} onChange={setVariablePay} prefix="$" />
+          <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
+          <InputField label={`Monthly Variable Pay (${variablePayInLocal && currencyCode !== "USD" ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && currencyCode !== "USD" ? (CURRENCIES.find(c => c.code === currencyCode)?.symbol || "$") : "$"} />
+          {currencyCode !== "USD" && (
+            <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
+                Enter in {currencyCode}
+              </label>
+              {variablePayInLocal && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(variablePay, 2)} USD</span>}
+            </div>
+          )}
           <InputField label="Monthly MRR Target (USD)" value={monthlyTarget} onChange={setMonthlyTarget} prefix="$" />
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
           <InputField label="Original MRR Signed - Month 0 (USD)" value={originalMRR} onChange={setOriginalMRR} prefix="$" />
           <InputField label="MRR Retained - End of Month 4 (USD)" value={retainedMRR} onChange={setRetainedMRR} prefix="$" />
-          <InputField label="One-Time Revenue Sold (USD)" value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix="$" />
-          <InputField label="Current Month's Commission (USD)" value={currentMonthCommission} onChange={setCurrentMonthCommission} prefix="$" />
-          <div style={{ marginTop: -12, marginBottom: 16, fontSize: 12, color: COLORS.secondary, fontStyle: "italic" }}>Leave this blank if you don't know and you'll see the net impact to your commission</div>
-          <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
               <RotateCcw size={18} /> Calculate Adjustment
@@ -161,25 +169,21 @@ export default function RetentionAdjustmentTab() {
                   <span style={{ color: COLORS.secondary, fontSize: 14 }}>Recalculated Commission</span>
                   <DualCurrency usd={result.recalculatedCommission} code={currencyCode} rate={exchangeRate} />
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
-                  <span style={{ color: COLORS.hucknall, fontSize: 14, fontWeight: 600 }}>Clawback Amount</span>
-                  <div style={{ color: COLORS.hucknall, fontWeight: 700, fontSize: 18, textAlign: "right" }}>
+
+                <div style={{ padding: 20, background: `${COLORS.hucknall}08`, borderRadius: 10, textAlign: "center", marginTop: 8 }}>
+                  <div style={{ fontSize: 13, color: COLORS.secondary, marginBottom: 6 }}>Net Impact to Commission</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: COLORS.hucknall }}>
                     -{fmt(result.clawbackAmount, 2)}
-                    {currencyCode !== "USD" && <div style={{ fontSize: 12, fontWeight: 400 }}>-{fmtLocal(result.clawbackAmount, currencyCode, exchangeRate, 2)}</div>}
+                  </div>
+                  {currencyCode !== "USD" && (
+                    <div style={{ fontSize: 14, color: COLORS.hucknall, marginTop: 4 }}>
+                      -{fmtLocal(result.clawbackAmount, currencyCode, exchangeRate, 2)}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: COLORS.secondary, marginTop: 8 }}>
+                    This amount will be deducted from your next commission payout.
                   </div>
                 </div>
-
-                <div style={{ padding: 20, background: COLORS.light, borderRadius: 10, textAlign: "center", marginTop: 8 }}>
-                  <div style={{ fontSize: 13, color: COLORS.secondary, marginBottom: 6 }}>Net Month 4 Commission Payout</div>
-                  <DualCurrency usd={result.netCommission} code={currencyCode} rate={exchangeRate} large />
-                </div>
-
-                {result.carryForward > 0 && (
-                  <div style={{ padding: "12px 16px", background: `${COLORS.hucknall}12`, borderRadius: 8, fontSize: 13, color: COLORS.hucknall, display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                    <AlertTriangle size={16} />
-                    Clawback exceeds current month commission. Remaining balance of {fmt(result.carryForward, 2)} will be carried forward.
-                  </div>
-                )}
               </div>
             )}
           </div>
