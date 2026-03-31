@@ -104,6 +104,7 @@ export function ZoneBadge({ zone }) {
     "No Commission": { bg: "#F3F4F6", color: COLORS.secondary },
     Threshold: { bg: "#F3F4F6", color: COLORS.secondary },
     Decelerator: { bg: "#FFF3ED", color: COLORS.elton },
+    "At Target": { bg: "#ECFDF5", color: COLORS.ceelo },
     Accelerator: { bg: "#ECFDF5", color: COLORS.ceelo },
     Cap: { bg: COLORS.prince20, color: COLORS.prince },
   };
