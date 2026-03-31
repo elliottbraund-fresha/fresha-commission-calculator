@@ -4,13 +4,14 @@ import {
 } from 'recharts';
 import { Calculator, Info, AlertTriangle, TrendingUp } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, InputField, SelectField, DualCurrency, ZoneBadge, CurrencySelector } from './shared.jsx';
-import { fmt, pct } from '../utils/currencies.js';
+import { fmt, fmtLocal, fmtCurrency, pct, CURRENCIES } from '../utils/currencies.js';
 import { calcBDMCommission, generateCurveData } from '../utils/commissionCalc.js';
 
 export default function CommissionCalculatorTab() {
   const [role, setRole] = useState("BDM");
   const [rampMonth, setRampMonth] = useState("M2+");
-  const [variablePay, setVariablePay] = useState(3000);
+  const [variablePayInput, setVariablePayInput] = useState(3000);
+  const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
   const [actualMRR, setActualMRR] = useState(8500);
   const [dealCount, setDealCount] = useState(5);
@@ -18,13 +19,23 @@ export default function CommissionCalculatorTab() {
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [oneTimeRevenue, setOneTimeRevenue] = useState(2000);
   const [calculated, setCalculated] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const variablePay = variablePayInLocal && currencyCode !== "USD" && exchangeRate > 0
+    ? variablePayInput / exchangeRate
+    : variablePayInput;
 
   const handleCalc = () => {
-    setCalculated(calcBDMCommission({
+    const result = calcBDMCommission({
       role, rampMonth, monthlyTarget, actualMRR,
       dealCount, oneTimeRevenue, variablePay,
       currencyCode, exchangeRate,
-    }));
+    });
+    setCalculated(result);
+    if (result.achievementPct > 100 && result.zone !== "No Commission" && result.zone !== "Threshold") {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
   };
 
   const curveData = useMemo(
@@ -51,7 +62,16 @@ export default function CommissionCalculatorTab() {
               { value: "M0", label: "M0 (Training)" }, { value: "M1", label: "M1 (Ramp)" }, { value: "M2+", label: "M2+ (Full)" },
             ]} />
           </div>
-          <InputField label="Monthly Variable Pay (USD)" value={variablePay} onChange={setVariablePay} prefix="$" />
+          <InputField label={`Monthly Variable Pay (${variablePayInLocal && currencyCode !== "USD" ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && currencyCode !== "USD" ? (CURRENCIES.find(c => c.code === currencyCode)?.symbol || "$") : "$"} />
+          {currencyCode !== "USD" && (
+            <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
+                Enter in {currencyCode}
+              </label>
+              {variablePayInLocal && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(variablePay, 2)} USD</span>}
+            </div>
+          )}
           <InputField label="Monthly MRR Target (USD)" value={monthlyTarget} onChange={setMonthlyTarget} prefix="$" />
           <InputField label="Actual MRR Generated (USD)" value={actualMRR} onChange={setActualMRR} prefix="$" />
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
@@ -67,12 +87,16 @@ export default function CommissionCalculatorTab() {
         <div>
           {calculated ? (
             <div
-              className={calculated.zone === "Accelerator" ? "fade-in celebrate" : "fade-in"}
+              className={calculated.zone === "Accelerator" || calculated.zone === "Cap" ? "fade-in celebrate" : "fade-in"}
               style={{
                 ...cardStyle,
-                borderTop: `4px solid ${calculated.zone === "Accelerator" ? COLORS.ceelo : calculated.zone === "Cap" ? COLORS.prince : calculated.zone === "Decelerator" ? COLORS.elton : COLORS.secondary}`,
+                borderTop: `4px solid ${calculated.zone === "Accelerator" ? COLORS.ceelo : calculated.zone === "Cap" ? COLORS.prince : calculated.zone === "At Target" ? COLORS.ceelo : calculated.zone === "Decelerator" ? COLORS.elton : COLORS.secondary}`,
+                position: "relative", overflow: "hidden",
               }}
             >
+              {showConfetti && (
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${COLORS.ceelo}, ${COLORS.prince}, ${COLORS.pink}, ${COLORS.ceelo})`, backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
+              )}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.dark, margin: 0 }}>Results</h2>
                 <ZoneBadge zone={calculated.zone} />
@@ -95,10 +119,10 @@ export default function CommissionCalculatorTab() {
                     </div>
                     <div style={{ padding: 16, background: COLORS.light, borderRadius: 8 }}>
                       <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 4 }}>
-                        {calculated.zone === "Threshold" || calculated.zone === "Decelerator" ? "Decelerator Multiplier" : "Accelerator Multiplier"}
+                        {calculated.zone === "Threshold" || calculated.zone === "Decelerator" ? "Decelerator Multiplier" : calculated.zone === "At Target" ? "Zone" : "Accelerator Multiplier"}
                       </div>
-                      <div style={{ fontSize: 28, fontWeight: 700, color: COLORS.prince }}>
-                        {calculated.zone === "Threshold" ? "-" : `${calculated.multiplier}x`}
+                      <div style={{ fontSize: 28, fontWeight: 700, color: calculated.zone === "At Target" ? COLORS.ceelo : COLORS.prince }}>
+                        {calculated.zone === "Threshold" ? "-" : calculated.zone === "At Target" ? "100%" : `${calculated.multiplier}x`}
                       </div>
                       <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: 2 }}>
                         {calculated.multiplierLabel}
@@ -132,16 +156,27 @@ export default function CommissionCalculatorTab() {
                     </div>
                   </div>
 
-                  <div style={{ padding: 20, background: calculated.zone === "Accelerator" ? `${COLORS.ceelo}11` : COLORS.light, borderRadius: 10, textAlign: "center" }}>
+                  <div style={{ padding: 20, background: (calculated.zone === "Accelerator" || calculated.zone === "At Target") ? `${COLORS.ceelo}11` : COLORS.light, borderRadius: 10, textAlign: "center" }}>
                     <div style={{ fontSize: 13, color: COLORS.secondary, marginBottom: 6 }}>Total Earnings</div>
                     <DualCurrency usd={calculated.totalUSD} code={currencyCode} rate={exchangeRate} large />
+                    {calculated.variableEarningsPct !== undefined && (
+                      <div style={{ fontSize: 12, color: COLORS.secondary, marginTop: 6 }}>
+                        Variable earnings at {calculated.variableEarningsPct.toFixed(1)}% of {fmt(variablePay, 2)}{currencyCode !== "USD" ? ` (${fmtLocal(variablePay, currencyCode, exchangeRate, 2)})` : ""}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Insight message */}
+                  {/* Insight message with currency signs */}
                   {calculated.insightMessage && (
                     <div style={{ marginTop: 16, padding: "14px 16px", background: calculated.zone === "Threshold" ? `${COLORS.hucknall}08` : calculated.zone === "Decelerator" ? `${COLORS.elton}10` : `${COLORS.ceelo}10`, borderRadius: 8, fontSize: 13, color: calculated.zone === "Threshold" ? COLORS.hucknall : calculated.zone === "Decelerator" ? COLORS.elton : COLORS.ceelo, display: "flex", alignItems: "flex-start", gap: 10 }}>
                       <TrendingUp size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-                      <div>{calculated.insightMessage}</div>
+                      <div>{calculated.insightMessage}{calculated.mrrToTarget > 0 && currencyCode !== "USD" ? ` (${fmtLocal(calculated.mrrToTarget, currencyCode, exchangeRate, 0)} in ${currencyCode})` : ""}</div>
+                    </div>
+                  )}
+
+                  {showConfetti && (
+                    <div style={{ marginTop: 16, padding: "14px 16px", background: `${COLORS.ceelo}15`, borderRadius: 8, fontSize: 14, color: COLORS.ceelo, textAlign: "center", fontWeight: 600 }}>
+                      ð Congratulations! You're above target!
                     </div>
                   )}
 
