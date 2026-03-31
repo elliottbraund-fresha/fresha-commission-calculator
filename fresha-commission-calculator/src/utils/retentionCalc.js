@@ -12,13 +12,12 @@ import { calcBDMCommission, getAcceleratorMultiplier } from './commissionCalc.js
  */
 export function calcRetention({
   originalMRR, retainedMRR, variablePay, dealCount,
-  monthlyTarget, rampMonth, role, oneTimeRevenue,
-  currentMonthCommission, exchangeRate,
+  monthlyTarget, rampMonth, role, exchangeRate,
 }) {
   const result = {
     retentionPct: 0, shortfallPct: 0,
     originalCommission: 0, recalculatedCommission: 0,
-    clawbackAmount: 0, netCommission: 0, carryForward: 0,
+    clawbackAmount: 0,
     status: "green",
     thresholdMissed: false,
     originalResult: null,
@@ -31,16 +30,14 @@ export function calcRetention({
 
   // No positive adjustment - if retained >= original, net impact = 0
   if (retainedMRR >= originalMRR) {
-    // Calculate original commission for display
     const origCalc = calcBDMCommission({
       role: role || "BDM", rampMonth: rampMonth || "M2+",
       monthlyTarget, actualMRR: originalMRR,
-      dealCount, oneTimeRevenue: oneTimeRevenue || 0,
+      dealCount, oneTimeRevenue: 0,
       variablePay, currencyCode: "USD", exchangeRate: 1,
     });
     result.originalCommission = origCalc.baseCommission;
     result.recalculatedCommission = origCalc.baseCommission;
-    result.netCommission = currentMonthCommission;
     result.status = "green";
     result.originalResult = origCalc;
     result.recalculatedResult = origCalc;
@@ -51,7 +48,7 @@ export function calcRetention({
   const origCalc = calcBDMCommission({
     role: role || "BDM", rampMonth: rampMonth || "M2+",
     monthlyTarget, actualMRR: originalMRR,
-    dealCount, oneTimeRevenue: oneTimeRevenue || 0,
+    dealCount, oneTimeRevenue: 0,
     variablePay, currencyCode: "USD", exchangeRate: 1,
   });
   result.originalCommission = origCalc.baseCommission;
@@ -61,7 +58,7 @@ export function calcRetention({
   const newCalc = calcBDMCommission({
     role: role || "BDM", rampMonth: rampMonth || "M2+",
     monthlyTarget, actualMRR: retainedMRR,
-    dealCount, oneTimeRevenue: oneTimeRevenue || 0,
+    dealCount, oneTimeRevenue: 0,
     variablePay, currencyCode: "USD", exchangeRate: 1,
   });
   result.recalculatedCommission = newCalc.baseCommission;
@@ -78,15 +75,7 @@ export function calcRetention({
     result.clawbackAmount = result.originalCommission - result.recalculatedCommission;
   }
 
-  // Ensure clawback is never negative (shouldn't happen given retainedMRR < originalMRR)
   result.clawbackAmount = Math.max(0, result.clawbackAmount);
-
-  result.netCommission = currentMonthCommission - result.clawbackAmount;
-
-  if (result.netCommission < 0) {
-    result.carryForward = Math.abs(result.netCommission);
-    result.netCommission = 0;
-  }
 
   result.status = result.thresholdMissed ? "red" :
                   result.retentionPct >= 80 ? "amber" : "red";
