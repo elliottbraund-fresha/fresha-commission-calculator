@@ -13,22 +13,39 @@ export default function CommissionCalculatorTab() {
   const [variablePayInput, setVariablePayInput] = useState(3000);
   const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
+  const [monthlyTargetInLocal, setMonthlyTargetInLocal] = useState(false);
   const [actualMRR, setActualMRR] = useState(8500);
+  const [actualMRRInLocal, setActualMRRInLocal] = useState(false);
   const [dealCount, setDealCount] = useState(5);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [oneTimeRevenue, setOneTimeRevenue] = useState(2000);
+  const [oneTimeRevenueInLocal, setOneTimeRevenueInLocal] = useState(false);
   const [calculated, setCalculated] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const variablePay = variablePayInLocal && currencyCode !== "USD" && exchangeRate > 0
+  const isLocal = currencyCode !== "USD" && exchangeRate > 0;
+
+  const variablePay = variablePayInLocal && isLocal
     ? variablePayInput / exchangeRate
     : variablePayInput;
 
+  const monthlyTargetUSD = monthlyTargetInLocal && isLocal
+    ? monthlyTarget / exchangeRate
+    : monthlyTarget;
+
+  const actualMRRUSD = actualMRRInLocal && isLocal
+    ? actualMRR / exchangeRate
+    : actualMRR;
+
+  const oneTimeRevenueUSD = oneTimeRevenueInLocal && isLocal
+    ? oneTimeRevenue / exchangeRate
+    : oneTimeRevenue;
+
   const handleCalc = () => {
     const result = calcBDMCommission({
-      role, rampMonth, monthlyTarget, actualMRR,
-      dealCount, oneTimeRevenue, variablePay,
+      role, rampMonth, monthlyTarget: monthlyTargetUSD, actualMRR: actualMRRUSD,
+      dealCount, oneTimeRevenue: oneTimeRevenueUSD, variablePay,
       currencyCode, exchangeRate,
     });
     setCalculated(result);
@@ -42,6 +59,43 @@ export default function CommissionCalculatorTab() {
     () => generateCurveData({ role, dealCount, threshold: 70, cap: 175 }),
     [role, dealCount]
   );
+
+  // Helper to format amounts with correct currency in insight messages
+  const fmtInsight = (v) => {
+    if (isLocal) {
+      return `${fmtLocal(v, currencyCode, exchangeRate, 2)} (${fmt(v, 2)})`;
+    }
+    return fmt(v, 2);
+  };
+
+  const fmtInsightInt = (v) => {
+    if (isLocal) {
+      return `${fmtLocal(v, currencyCode, exchangeRate, 0)} (${fmt(v, 0)})`;
+    }
+    return fmt(v, 0);
+  };
+
+  // Build a local-aware label suffix
+  const inputCurrencyLabel = (baseLabel) => {
+    const fieldLocal = baseLabel.includes("Variable Pay") ? variablePayInLocal :
+                       baseLabel.includes("MRR Target") ? monthlyTargetInLocal :
+                       baseLabel.includes("Actual MRR") ? actualMRRInLocal :
+                       baseLabel.includes("One-Time") ? oneTimeRevenueInLocal : false;
+    return fieldLocal && isLocal ? currencyCode : "USD";
+  };
+
+  const localCheckbox = (checked, setCh, label) => {
+    if (!isLocal) return null;
+    return (
+      <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+        <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <input type="checkbox" checked={checked} onChange={e => setCh(e.target.checked)} />
+          Enter in {currencyCode}
+        </label>
+        {checked && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(label, 2)} USD</span>}
+      </div>
+    );
+  };
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -62,20 +116,20 @@ export default function CommissionCalculatorTab() {
               { value: "M0", label: "M0 (Training)" }, { value: "M1", label: "M1 (Ramp)" }, { value: "M2+", label: "M2+ (Full)" },
             ]} />
           </div>
-          <InputField label={`Monthly Variable Pay (${variablePayInLocal && currencyCode !== "USD" ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && currencyCode !== "USD" ? (CURRENCIES.find(c => c.code === currencyCode)?.symbol || "$") : "$"} />
-          {currencyCode !== "USD" && (
-            <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-              <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
-                Enter in {currencyCode}
-              </label>
-              {variablePayInLocal && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(variablePay, 2)} USD</span>}
-            </div>
-          )}
-          <InputField label="Monthly MRR Target (USD)" value={monthlyTarget} onChange={setMonthlyTarget} prefix="$" />
-          <InputField label="Actual MRR Generated (USD)" value={actualMRR} onChange={setActualMRR} prefix="$" />
+          <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(variablePayInLocal, setVariablePayInLocal, variablePay)}
+
+          <InputField label={`Monthly MRR Target (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(monthlyTargetInLocal, setMonthlyTargetInLocal, monthlyTargetUSD)}
+
+          <InputField label={`Actual MRR Generated (${actualMRRInLocal && isLocal ? currencyCode : "USD"})`} value={actualMRR} onChange={setActualMRR} prefix={actualMRRInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(actualMRRInLocal, setActualMRRInLocal, actualMRRUSD)}
+
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
-          <InputField label="One-Time Revenue Sold (USD)" value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix="$" />
+
+          <InputField label={`One-Time Revenue Sold (${oneTimeRevenueInLocal && isLocal ? currencyCode : "USD"})`} value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix={oneTimeRevenueInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(oneTimeRevenueInLocal, setOneTimeRevenueInLocal, oneTimeRevenueUSD)}
+
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
               <Calculator size={18} /> Calculate Commission
@@ -136,7 +190,7 @@ export default function CommissionCalculatorTab() {
                       <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
                       <div>
                         <div style={{ fontWeight: 700, marginBottom: 4 }}>Threshold Not Reached</div>
-                        <div>You have not earned commission as you are below the 70% threshold. You need <strong>{fmt(Math.ceil(calculated.mrrToThreshold))}</strong> more MRR to reach the threshold and start earning variable pay.</div>
+                        <div>You have not earned commission as you are below the 70% threshold. You need <strong>{fmtInsightInt(Math.ceil(calculated.mrrToThreshold))}</strong> more MRR to reach the threshold and start earning variable pay.</div>
                       </div>
                     </div>
                   )}
@@ -144,7 +198,7 @@ export default function CommissionCalculatorTab() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
                       <span style={{ color: COLORS.secondary, fontSize: 14 }}>Monthly Variable Pay</span>
-                      <span style={{ fontWeight: 600, color: COLORS.dark }}>{fmt(calculated.variablePay, 2)}</span>
+                      <DualCurrency usd={calculated.variablePay} code={currencyCode} rate={exchangeRate} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${COLORS.border}` }}>
                       <span style={{ color: COLORS.secondary, fontSize: 14 }}>Commission</span>
@@ -161,22 +215,26 @@ export default function CommissionCalculatorTab() {
                     <DualCurrency usd={calculated.totalUSD} code={currencyCode} rate={exchangeRate} large />
                     {calculated.variableEarningsPct !== undefined && (
                       <div style={{ fontSize: 12, color: COLORS.secondary, marginTop: 6 }}>
-                        Variable earnings at {calculated.variableEarningsPct.toFixed(1)}% of {fmt(variablePay, 2)}{currencyCode !== "USD" ? ` (${fmtLocal(variablePay, currencyCode, exchangeRate, 2)})` : ""}
+                        Variable earnings at {calculated.variableEarningsPct.toFixed(1)}% of {fmtInsight(variablePay)}
                       </div>
                     )}
                   </div>
 
-                  {/* Insight message with currency signs */}
+                  {/* Insight message with correct currency */}
                   {calculated.insightMessage && (
                     <div style={{ marginTop: 16, padding: "14px 16px", background: calculated.zone === "Threshold" ? `${COLORS.hucknall}08` : calculated.zone === "Decelerator" ? `${COLORS.elton}10` : `${COLORS.ceelo}10`, borderRadius: 8, fontSize: 13, color: calculated.zone === "Threshold" ? COLORS.hucknall : calculated.zone === "Decelerator" ? COLORS.elton : COLORS.ceelo, display: "flex", alignItems: "flex-start", gap: 10 }}>
                       <TrendingUp size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-                      <div>{calculated.insightMessage}{calculated.mrrToTarget > 0 && currencyCode !== "USD" ? ` (${fmtLocal(calculated.mrrToTarget, currencyCode, exchangeRate, 0)} in ${currencyCode})` : ""}</div>
+                      <div>{calculated.insightMessage.replace(/\$[\d,.]+/g, (match) => {
+                        const num = parseFloat(match.replace(/[$,]/g, ''));
+                        if (isNaN(num)) return match;
+                        return fmtInsight(num);
+                      })}</div>
                     </div>
                   )}
 
                   {showConfetti && (
                     <div style={{ marginTop: 16, padding: "14px 16px", background: `${COLORS.ceelo}15`, borderRadius: 8, fontSize: 14, color: COLORS.ceelo, textAlign: "center", fontWeight: 600 }}>
-                      ð Congratulations! You're above target!
+                      Congratulations! You're above target!
                     </div>
                   )}
 
