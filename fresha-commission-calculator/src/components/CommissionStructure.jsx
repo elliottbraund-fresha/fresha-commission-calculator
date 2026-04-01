@@ -208,7 +208,7 @@ export default function CommissionStructure() {
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.ceelo }}>Performance Bonus</td>
+                <td style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.ceelo }}>Milestone Reward</td>
                 <td style={{ padding: "12px 16px" }}>90% of MRR Target</td>
                 <td style={{ padding: "12px 16px" }}>Uncapped</td>
                 <td style={{ padding: "12px 16px" }}>
@@ -218,7 +218,7 @@ export default function CommissionStructure() {
                 </td>
               </tr>
               <tr style={{ background: COLORS.light }}>
-                <td style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.prince }}>Milestone Reward</td>
+                <td style={{ padding: "12px 16px", fontWeight: 600, color: COLORS.prince }}>Performance Bonus</td>
                 <td style={{ padding: "12px 16px" }}>100% of MRR Target</td>
                 <td style={{ padding: "12px 16px" }}>Uncapped</td>
                 <td style={{ padding: "12px 16px" }}>
