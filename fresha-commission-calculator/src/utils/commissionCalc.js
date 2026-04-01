@@ -47,10 +47,13 @@ export function calcBDMCommission({
     return result;
   }
 
-  let effectiveTarget = monthlyTarget;
+  // For M1 ramp, the user enters the 50% ramp target directly.
+  // The full target is 2x the entered value.
+  let effectiveTarget = monthlyTarget; // This is the ramp target (what they're measured against)
+  let fullTarget = monthlyTarget; // For accelerator unlock check
   if (rampMonth === "M1") {
-    effectiveTarget = monthlyTarget * 0.5;
-    result.rampMessage = "M1: Target at 50%. Accelerators apply once full target is exceeded.";
+    fullTarget = monthlyTarget * 2; // Full target is 2x the entered ramp target
+    result.rampMessage = `M1 Ramp: Your reduced target is ${monthlyTarget} (50% of full target ${fullTarget}). Accelerators apply once the full target is exceeded.`;
   }
   result.effectiveTarget = effectiveTarget;
 
@@ -97,7 +100,7 @@ export function calcBDMCommission({
     result.baseCommission = variablePay; // 100% of variable at target
 
     // M1 ramp: accelerator not unlocked until full target is achieved
-    const actualFullTargetAchievement = (actualMRR / monthlyTarget) * 100;
+    const actualFullTargetAchievement = (actualMRR / fullTarget) * 100;
     const m1AccelLocked = rampMonth === "M1" && actualFullTargetAchievement < 100;
 
     if (m1AccelLocked) {
@@ -106,43 +109,47 @@ export function calcBDMCommission({
       result.multiplier = 1;
       result.multiplierLabel = "Accelerator locked (M1)";
       result.variableEarningsPct = 100;
-      result.insightMessage = `M1 Ramp: You've exceeded your reduced target but accelerators don't unlock until you hit the full target of ${monthlyTarget}. You need ${Math.ceil(monthlyTarget - actualMRR)} more MRR to unlock accelerators.`;
+      result.insightMessage = `M1 Ramp: You've exceeded your reduced target but accelerators don't unlock until you hit the full target of ${fullTarget}. You need ${Math.ceil(fullTarget - actualMRR)} more MRR to unlock accelerators.`;
     } else {
-      const cappedAchievement = Math.min(achievement, 175);
-      const aboveTarget = cappedAchievement - 100;
+      // Accelerator is always calculated from the FULL target, not the ramp target
+      // For M1: full target = 2x entered ramp target; for M2+: fullTarget = effectiveTarget
+      const accelBaseTarget = fullTarget;
+      const fullAchievement = (actualMRR / accelBaseTarget) * 100;
+      const cappedFullAchievement = Math.min(fullAchievement, 175);
+      const aboveFullTarget = cappedFullAchievement - 100;
 
       const accelMultiplier = getAcceleratorMultiplier(dealCount);
       result.multiplier = accelMultiplier;
       result.multiplierLabel = `Accelerator ${accelMultiplier}x`;
 
-      const acceleratorBonus = (aboveTarget / 100) * variablePay * accelMultiplier;
+      const acceleratorBonus = (aboveFullTarget / 100) * variablePay * accelMultiplier;
       result.baseCommission += acceleratorBonus;
       result.variableEarningsPct = (result.baseCommission / variablePay) * 100;
 
-      // Cap requires BOTH 175%+ achievement AND 8+ deals (2x accelerator)
-      const isFullCap = achievement >= 175 && dealCount >= 8;
+      // Cap requires BOTH 175%+ full target achievement AND 8+ deals (2x accelerator)
+      const isFullCap = fullAchievement >= 175 && dealCount >= 8;
       result.zone = isFullCap ? "Cap" : "Accelerator";
 
       if (isFullCap) {
         result.insightMessage = `You have hit the 175% cap with 8+ deals (2x accelerator). Maximum variable earnings achieved.`;
-      } else if (achievement >= 175 && dealCount < 8) {
+      } else if (fullAchievement >= 175 && dealCount < 8) {
         const nextAccel = getAcceleratorMultiplier(dealCount + 1);
         const maxAbove = 175 - 100;
         const currentCommission = result.baseCommission;
         const newCommission = variablePay + (maxAbove / 100) * variablePay * nextAccel;
         const additionalEarnings = newCommission - currentCommission;
-        result.insightMessage = `You have reached 175% achievement but your accelerator is ${accelMultiplier}x (${dealCount} deals). One more deal would increase to ${nextAccel}x, earning an additional ${additionalEarnings.toFixed(2)}.`;
+        result.insightMessage = `You have reached 175% of full target but your accelerator is ${accelMultiplier}x (${dealCount} deals). One more deal would increase to ${nextAccel}x, earning an additional ${additionalEarnings.toFixed(2)}.`;
       } else {
         if (dealCount >= 8) {
-          result.mrrToCap = effectiveTarget * 1.75 - actualMRR;
+          result.mrrToCap = accelBaseTarget * 1.75 - actualMRR;
           result.insightMessage = `You have maxed the accelerator at ${accelMultiplier}x. You need ${Math.ceil(result.mrrToCap)} more MRR to hit the 175% cap.`;
         } else {
           const avgMRRPerDeal = dealCount > 0 ? actualMRR / dealCount : 0;
           if (avgMRRPerDeal > 0) {
             const newDealCount = dealCount + 1;
             const newActualMRR = actualMRR + avgMRRPerDeal;
-            const newAchievement = Math.min((newActualMRR / effectiveTarget) * 100, 175);
-            const newAbove = newAchievement - 100;
+            const newFullAchievement = Math.min((newActualMRR / accelBaseTarget) * 100, 175);
+            const newAbove = newFullAchievement - 100;
             const newAccel = getAcceleratorMultiplier(newDealCount);
             const newCommission = variablePay + (newAbove / 100) * variablePay * newAccel;
             result.additionalEarningsOneMoreDeal = newCommission - result.baseCommission;
@@ -153,8 +160,8 @@ export function calcBDMCommission({
     }
   }
 
-  // Performance bonus
-  const achievementVsFullTarget = (actualMRR / monthlyTarget) * 100;
+  // Performance bonus (always measured against full target)
+  const achievementVsFullTarget = (actualMRR / fullTarget) * 100;
   if (oneTimeRevenue > 0) {
     if (achievementVsFullTarget >= 100) {
       result.performanceBonus = oneTimeRevenue * 0.4;
