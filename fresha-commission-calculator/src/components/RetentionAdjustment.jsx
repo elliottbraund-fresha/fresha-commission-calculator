@@ -104,7 +104,7 @@ export default function RetentionAdjustmentTab() {
           <InputField label={`Monthly MRR Target (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
           {localCheckbox(monthlyTargetInLocal, setMonthlyTargetInLocal, monthlyTargetUSD)}
 
-          <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
+          <InputField label="Number of Deals Signed - Month 0" value={dealCount} onChange={setDealCount} min={0} />
 
           <InputField label={`Original MRR Signed - Month 0 (${originalMRRInLocal && isLocal ? currencyCode : "USD"})`} value={originalMRR} onChange={setOriginalMRR} prefix={originalMRRInLocal && isLocal ? currencyCode : "$"} />
           {localCheckbox(originalMRRInLocal, setOriginalMRRInLocal, originalMRRUSD)}
