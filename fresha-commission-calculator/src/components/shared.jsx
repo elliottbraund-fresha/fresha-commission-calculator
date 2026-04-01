@@ -1,5 +1,6 @@
 import React from 'react';
-import { CURRENCIES, fmt, fmtLocal } from '../utils/currencies.js';
+import { CURRENCIES, fmt, fmtLocal, fmtCurrency } from '../utils/currencies.js';
+import { AlertTriangle } from 'lucide-react';
 
 export const COLORS = {
   prince: "#7B69FF", prince80: "#9587FF", prince60: "#B0A5FF",
@@ -51,7 +52,7 @@ export function InputField({ label, value, onChange, type = "number", prefix, su
             type={type}
             value={value}
             onChange={e => onChange(type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)}
-            style={{ ...inputStyle, paddingLeft: prefix ? 28 : 14, paddingRight: suffix ? 50 : 14 }}
+            style={{ ...inputStyle, paddingLeft: prefix ? (prefix.length > 1 ? 12 + prefix.length * 8 : 28) : 14, paddingRight: suffix ? 50 : 14 }}
             min={min}
             step={step || "any"}
             aria-label={label}
@@ -85,16 +86,20 @@ export function SelectField({ label, value, onChange, options }) {
 }
 
 export function DualCurrency({ usd, code, rate, large }) {
-  const fontSize = large ? 28 : 18;
-  const localSize = large ? 16 : 13;
+  const mainSize = large ? 28 : 18;
+  const subSize = large ? 16 : 13;
+  if (code === "USD") {
+    return (
+      <div>
+        <div style={{ fontSize: mainSize, fontWeight: 700, color: COLORS.dark }}>{fmt(usd, 2)}</div>
+      </div>
+    );
+  }
+  // Non-USD: show local currency as main, USD underneath
   return (
     <div>
-      <div style={{ fontSize, fontWeight: 700, color: COLORS.dark }}>{fmt(usd, 2)}</div>
-      {code !== "USD" && (
-        <div style={{ fontSize: localSize, color: COLORS.secondary, marginTop: 2 }}>
-          {fmtLocal(usd, code, rate, 2)}
-        </div>
-      )}
+      <div style={{ fontSize: mainSize, fontWeight: 700, color: COLORS.dark }}>{fmtLocal(usd, code, rate, 2)}</div>
+      <div style={{ fontSize: subSize, color: COLORS.secondary, marginTop: 2 }}>{fmt(usd, 2)}</div>
     </div>
   );
 }
@@ -117,20 +122,32 @@ export function ZoneBadge({ zone }) {
   );
 }
 
+export function FxDisclaimer() {
+  return (
+    <div style={{ padding: "10px 14px", background: `${COLORS.elton}08`, border: `1px solid ${COLORS.elton}20`, borderRadius: 8, fontSize: 12, color: COLORS.elton, display: "flex", alignItems: "flex-start", gap: 8, marginTop: 8 }}>
+      <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+      <span>The actual conversion uses an average FX rate throughout the month. We are using a fixed FX rate here, so this should only be used as an indicative calculation. Use the USD values found in Periscope for the most accurate commission calculation.</span>
+    </div>
+  );
+}
+
 export function CurrencySelector({ currencyCode, setCurrencyCode, exchangeRate, setExchangeRate }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-      <SelectField
-        label="Commission Currency"
-        value={currencyCode}
-        onChange={(v) => {
-          setCurrencyCode(v);
-          const c = CURRENCIES.find(cur => cur.code === v);
-          if (c) setExchangeRate(c.rate);
-        }}
-        options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} - ${c.name}` }))}
-      />
-      <InputField label="Exchange Rate (vs 1 USD)" value={exchangeRate} onChange={setExchangeRate} step="0.01" />
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <SelectField
+          label="Commission Currency"
+          value={currencyCode}
+          onChange={(v) => {
+            setCurrencyCode(v);
+            const c = CURRENCIES.find(cur => cur.code === v);
+            if (c) setExchangeRate(c.rate);
+          }}
+          options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} - ${c.name}` }))}
+        />
+        <InputField label="Exchange Rate (vs 1 USD)" value={exchangeRate} onChange={setExchangeRate} step="0.01" />
+      </div>
+      {currencyCode !== "USD" && <FxDisclaimer />}
     </div>
   );
 }
