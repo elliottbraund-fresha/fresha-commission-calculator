@@ -52,7 +52,7 @@ export function InputField({ label, value, onChange, type = "number", prefix, su
             type={type}
             value={value}
             onChange={e => onChange(type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)}
-            style={{ ...inputStyle, paddingLeft: prefix ? (prefix.length > 1 ? 12 + prefix.length * 8 : 28) : 14, paddingRight: suffix ? 50 : 14 }}
+            style={{ ...inputStyle, paddingLeft: prefix ? (prefix.length > 1 ? 16 + prefix.length * 10 : 28) : 14, paddingRight: suffix ? 50 : 14 }}
             min={min}
             step={step || "any"}
             aria-label={label}
