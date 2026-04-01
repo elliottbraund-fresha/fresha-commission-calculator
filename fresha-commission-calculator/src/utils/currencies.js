@@ -47,5 +47,7 @@ export function fmtCurrency(v, code, decimals = 0) {
 }
 
 export function pct(v) {
-  return `${Number(v).toFixed(1)}%`;
+  const n = Number(v);
+  if (isNaN(n)) return "0.0%";
+  return `${n.toFixed(1)}%`;
 }
