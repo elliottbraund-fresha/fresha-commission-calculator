@@ -10,21 +10,51 @@ export default function RetentionAdjustmentTab() {
   const [variablePayInput, setVariablePayInput] = useState(3000);
   const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
+  const [monthlyTargetInLocal, setMonthlyTargetInLocal] = useState(false);
   const [dealCount, setDealCount] = useState(5);
   const [originalMRR, setOriginalMRR] = useState(12000);
+  const [originalMRRInLocal, setOriginalMRRInLocal] = useState(false);
   const [retainedMRR, setRetainedMRR] = useState(9500);
+  const [retainedMRRInLocal, setRetainedMRRInLocal] = useState(false);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [result, setResult] = useState(null);
 
-  const variablePay = variablePayInLocal && currencyCode !== "USD" && exchangeRate > 0
+  const isLocal = currencyCode !== "USD" && exchangeRate > 0;
+
+  const variablePay = variablePayInLocal && isLocal
     ? variablePayInput / exchangeRate
     : variablePayInput;
 
+  const monthlyTargetUSD = monthlyTargetInLocal && isLocal
+    ? monthlyTarget / exchangeRate
+    : monthlyTarget;
+
+  const originalMRRUSD = originalMRRInLocal && isLocal
+    ? originalMRR / exchangeRate
+    : originalMRR;
+
+  const retainedMRRUSD = retainedMRRInLocal && isLocal
+    ? retainedMRR / exchangeRate
+    : retainedMRR;
+
+  const localCheckbox = (checked, setCh, usdValue) => {
+    if (!isLocal) return null;
+    return (
+      <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+        <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <input type="checkbox" checked={checked} onChange={e => setCh(e.target.checked)} />
+          Enter in {currencyCode}
+        </label>
+        {checked && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(usdValue, 2)} USD</span>}
+      </div>
+    );
+  };
+
   const handleCalc = () => {
     setResult(calcRetention({
-      originalMRR, retainedMRR, variablePay, dealCount,
-      monthlyTarget, rampMonth, role, exchangeRate,
+      originalMRR: originalMRRUSD, retainedMRR: retainedMRRUSD, variablePay, dealCount,
+      monthlyTarget: monthlyTargetUSD, rampMonth, role, exchangeRate,
     }));
   };
 
@@ -67,20 +97,21 @@ export default function RetentionAdjustmentTab() {
             ]} />
           </div>
           <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
-          <InputField label={`Monthly Variable Pay (${variablePayInLocal && currencyCode !== "USD" ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && currencyCode !== "USD" ? (CURRENCIES.find(c => c.code === currencyCode)?.symbol || "$") : "$"} />
-          {currencyCode !== "USD" && (
-            <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-              <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
-                Enter in {currencyCode}
-              </label>
-              {variablePayInLocal && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(variablePay, 2)} USD</span>}
-            </div>
-          )}
-          <InputField label="Monthly MRR Target (USD)" value={monthlyTarget} onChange={setMonthlyTarget} prefix="$" />
+
+          <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(variablePayInLocal, setVariablePayInLocal, variablePay)}
+
+          <InputField label={`Monthly MRR Target (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(monthlyTargetInLocal, setMonthlyTargetInLocal, monthlyTargetUSD)}
+
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
-          <InputField label="Original MRR Signed - Month 0 (USD)" value={originalMRR} onChange={setOriginalMRR} prefix="$" />
-          <InputField label="MRR Retained - End of Month 4 (USD)" value={retainedMRR} onChange={setRetainedMRR} prefix="$" />
+
+          <InputField label={`Original MRR Signed - Month 0 (${originalMRRInLocal && isLocal ? currencyCode : "USD"})`} value={originalMRR} onChange={setOriginalMRR} prefix={originalMRRInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(originalMRRInLocal, setOriginalMRRInLocal, originalMRRUSD)}
+
+          <InputField label={`MRR Retained - End of Month 4 (${retainedMRRInLocal && isLocal ? currencyCode : "USD"})`} value={retainedMRR} onChange={setRetainedMRR} prefix={retainedMRRInLocal && isLocal ? currencyCode : "$"} />
+          {localCheckbox(retainedMRRInLocal, setRetainedMRRInLocal, retainedMRRUSD)}
+
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
               <RotateCcw size={18} /> Calculate Adjustment
@@ -172,12 +203,18 @@ export default function RetentionAdjustmentTab() {
 
                 <div style={{ padding: 20, background: `${COLORS.hucknall}08`, borderRadius: 10, textAlign: "center", marginTop: 8 }}>
                   <div style={{ fontSize: 13, color: COLORS.secondary, marginBottom: 6 }}>Net Impact to Commission</div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: COLORS.hucknall }}>
-                    -{fmt(result.clawbackAmount, 2)}
-                  </div>
-                  {currencyCode !== "USD" && (
-                    <div style={{ fontSize: 14, color: COLORS.hucknall, marginTop: 4 }}>
-                      -{fmtLocal(result.clawbackAmount, currencyCode, exchangeRate, 2)}
+                  {isLocal ? (
+                    <>
+                      <div style={{ fontSize: 28, fontWeight: 700, color: COLORS.hucknall }}>
+                        -{fmtLocal(result.clawbackAmount, currencyCode, exchangeRate, 2)}
+                      </div>
+                      <div style={{ fontSize: 14, color: COLORS.hucknall, marginTop: 4 }}>
+                        -{fmt(result.clawbackAmount, 2)}
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: 28, fontWeight: 700, color: COLORS.hucknall }}>
+                      -{fmt(result.clawbackAmount, 2)}
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: COLORS.secondary, marginTop: 8 }}>
