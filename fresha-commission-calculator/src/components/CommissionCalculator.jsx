@@ -44,7 +44,7 @@ export default function CommissionCalculatorTab() {
 
   const handleCalc = () => {
     const result = calcBDMCommission({
-      role, rampMonth, monthlyTarget: monthlyTargetUSD, actualMRQ: actualMRRUSD,
+      role, rampMonth, monthlyTarget: monthlyTargetUSD, actualMRR: actualMRRUSD,
       dealCount, oneTimeRevenue: oneTimeRevenueUSD, variablePay,
       currencyCode, exchangeRate,
     });
