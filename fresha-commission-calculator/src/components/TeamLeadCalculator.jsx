@@ -172,116 +172,169 @@ export default function TeamLeadCalculatorTab() {
                     onChange={e => { const v = [...bdmActuals]; v[i] = Number(e.target.value); setBdmActuals(v); }}
                     style={{ ...inputStyle, padding: "8px 10px", fontSize: 13 }}
                     aria-label={`BDM ${i + 1} Actual`}
-                ÏÙ]
-J_BÚ\ÓØØ[	
-]Ý[O^ÞÈ\Ü^N^Ø\MX\Ú[Ü
-_OX[Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KÝ\ÛÜÚ[\\Ü^N^[YÛ][\ÎÙ[\Ø\
-_O[]\OHÚXÚØÞÚXÚÙY^ØU\Ù]Ò[ØØ[HÛÚ[ÙO^ÙHOÙ]U\Ù]Ò[ØØ[
-K\Ù]ÚXÚÙY
-_HÏ\Ù]È[ØÝ\[ÞPÛÙ_BÛX[X[Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KÝ\ÛÜÚ[\\Ü^N^[YÛ][\ÎÙ[\Ø\
-_O[]\OHÚXÚØÞÚXÚÙY^ØPXÝX[Ò[ØØ[HÛÚ[ÙO^ÙHOÙ]PXÝX[Ò[ØØ[
-K\Ù]ÚXÚÙY
-_HÏXÝX[È[ØÝ\[ÞPÛÙ_BÛX[Ù]
-_BÙ]
-_BÙ]Ù]ËÊ\Ý[È
-ßBÜ\Ý[	
-]Û\ÜÓ[YO^Ü\Ý[ÛHOOHXØÙ[\]Ü\Ý[ÛHOOHØ\ÈYKZ[Ù[X]HYKZ[BÝ[O^ÞÂØ\Ý[KÜ\Ü
-ÛÛY	Ü\Ý[ÛHOOHXØÙ[\]ÜÈÓÓÔËÙY[È\Ý[ÛHOOHØ\ÈÓÓÔË[ÙH\Ý[ÛHOOH]\Ù]ÈÓÓÔËÙY[È\Ý[ÛHOOHXÙ[\]ÜÈÓÓÔË[ÛÓÓÔËÙXÛÛ\_XÜÚ][Û[]]HÝ\ÝÎY[_BÜÚÝÐÛÛ]H	
-]Ý[O^ÞÈÜÚ][ÛXÛÛ]HÜYYÚZYÚ
-XÚÙÜÝ[[X\YÜYY[
-LYË	ÐÓÓÔËÙY[ßK	ÐÓÓÔË[Ù_K	ÐÓÓÔË[ßK	ÐÓÓÔËÙY[ßJXXÚÙÜÝ[Ú^N	HL	H[[X][ÛÚ[[Y\K\ÈX\ÙKZ[[Ý][[]H_HÏ
-_BÜ\Ý[[\Y\ÜØYÙHÈ
-]Ý[O^ÞÈY[Î^[YÛÙ[\_O[ÈÚ^O^ÌÌHÛÛÜ^ÐÓÓÔË[Ù_HÏÝ[O^ÞÈÛÚ^NMÛÛÜÓÓÔË[ÙKÛÙZYÚ
-X\Ú[ÜL_OÜ\Ý[[\Y\ÜØYÙ_OÜÙ]
-H
-]Ý[O^ÞÈ\Ü^N^\ÝYPÛÛ[ÜXÙKX]ÙY[[YÛ][\ÎÙ[\X\Ú[ÝÛN_OÝ[O^ÞÈÛÚ^NÛÙZYÚ
-ÌÛÛÜÓÓÔË\ËX\Ú[_OX[HXY\Ý[ÏÚÛPYÙHÛO^Ü\Ý[Û_HÏÙ]ËÊ\ÚÛÝY]Ø\[È
-ßBÜ\Ý[\ÚÛZ\ÜÙY	
-]Ý[O^ÞÈY[ÎMMXÚÙÜÝ[	ÐÓÓÔËXÚÛ[LLÜ\Y]\ÎÛÚ^NLËÛÛÜÓÓÔËXÚÛ[X\Ú[ÝÛNM\Ü^N^[YÛ][\Î^\Ý\Ø\L_O[\X[ÛHÚ^O^ÌNHÝ[O^ÞÈ^Ú[ÎX\Ú[ÜH_HÏ]]Ý[O^ÞÈÛÙZYÚ
-ÌX\Ú[ÝÛN
-_O\ÚÛÝXXÚY
-	JOÙ]]XÚY][Y[\ÈÜÝ
-\Ý[XÚY][Y[Ý
-_HÚXÚ\È[ÝÈH	H\ÚÛÈÛÛ[Z\ÜÚ[ÛX\Y[ÝHYYÙ]
-X]ÙZ[
-\Ý[Ý[\Ù]
-H\Ý[Ý[XÝX[
-J_H[ÜHTÈXXÚH\ÚÛÙ]Ù]Ù]
-_BËÊØ\]Y\ÜØYÙH
-ßBÜ\Ý[Ø\]	
-]Ý[O^ÞÈY[ÎMMXÚÙÜÝ[ÓÓÔË[ÙLÜ\Y]\ÎÛÚ^NLËÛÛÜÓÓÔË[ÙKX\Ú[ÝÛNM\Ü^N^[YÛ][\ÎÙ[\Ø\L_O]Ø\Ú^O^ÌNHÏ]ÝÛÏØ\XXÚY
-LIJKÜÝÛÏX^[][H\XXHX\[ÜÈXÚY]YXÚY][Y[ÜÝ
-\Ý[XÚY][Y[Ý
-_KÙ]Ù]
-_B]Û\ÜÓ[YOHÜYMXÛÛÝ[O^ÞÈ\Ü^NÜYÜY[\]PÛÛ[[Î\X]
+                  />
+                </div>
+              ))}
+              {isLocal && (
+                <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
+                  <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="checkbox" checked={bdmTargetsInLocal} onChange={e => setBdmTargetsInLocal(e.target.checked)} />
+                    Targets in {currencyCode}
+                  </label>
+                  <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="checkbox" checked={bdmActualsInLocal} onChange={e => setBdmActualsInLocal(e.target.checked)} />
+                    Actuals in {currencyCode}
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
-YHØ\MX\Ú[ÝÛN_OÖÂÈX[\ÛÛ[\Ù][YN]
-\Ý[\ÛÛ[\Ù]
-KÝX	ÊÙ]\ÛÛ[Ý
-PÛÝ[
-H
-L
-KÑ^Y
-
-_IHÙH\Ù]KÈX[Ý[\Ù][YN]
-\Ý[Ý[\Ù]
-HKÈX[Ý[XÝX[[YN]
-\Ý[Ý[XÝX[
-HKÈX[XÚY][Y[[YNÝ
-\Ý[XÚY][Y[Ý
-KÛÛÜ\Ý[XÚY][Y[ÝHLÈÓÓÔËÙY[È\Ý[XÚY][Y[ÝHÈÓÓÔË[ÛÓÓÔËXÚÛ[KKX\
+      {/* Results */}
+      {result && (
+        <div
+          className={result.zone === "Accelerator" || result.zone === "Cap" ? "fade-in celebrate" : "fade-in"}
+          style={{
+            ...cardStyle,
+            borderTop: `4px solid ${result.zone === "Accelerator" ? COLORS.ceelo : result.zone === "Cap" ? COLORS.prince : result.zone === "At Target" ? COLORS.ceelo : result.zone === "Decelerator" ? COLORS.elton : COLORS.secondary}`,
+            position: "relative", overflow: "hidden",
+          }}
+        >
+          {showConfetti && (
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${COLORS.ceelo}, ${COLORS.prince}, ${COLORS.pink}, ${COLORS.ceelo})`, backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          )}
+          {result.rampMessage ? (
+            <div style={{ padding: 20, textAlign: "center" }}>
+              <Info size={32} color={COLORS.prince} />
+              <p style={{ fontSize: 16, color: COLORS.prince, fontWeight: 600, marginTop: 12 }}>{result.rampMessage}</p>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.dark, margin: 0 }}>Team Lead Results</h2>
+                <ZoneBadge zone={result.zone} />
+              </div>
 
-][KJHO
-]Ù^O^Ú_HÝ[O^ÞÈY[ÎMXÚÙÜÝ[ÓÓÔËYÚÜ\Y]\ÎL^[YÛÙ[\_O]Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KX\Ú[ÝÛN
-_OÚ][KX[OÙ]]Ý[O^ÞÈÛÚ^NÛÙZYÚ
-ÌÛÛÜ][KÛÛÜÓÓÔË\È_OÚ][K[Y_OÙ]Ú][KÝX	]Ý[O^ÞÈÛÚ^NLKÛÛÜÓÓÔËÙXÛÛ\KX\Ú[Ü_OÚ][KÝXOÙ]BÙ]
-J_BÙ]]Ý[O^ÞÈ\Ü^NÜYÜY[\]PÛÛ[[ÎYYYYØ\MX\Ú[ÝÛN_O]Ý[O^ÞÈY[ÎMXÚÙÜÝ[ÓÓÔËYÚÜ\Y]\ÎL^[YÛÙ[\_O]Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KX\Ú[ÝÛN
-_O\XXH^OÙ]X[Ý\[ÞH\Ù^Ü\Ý[\XXT^_HÛÙO^ØÝ\[ÞPÛÙ_H]O^Ù^Ú[ÙT]_HÏÙ]]Ý[O^ÞÈY[ÎMXÚÙÜÝ[ÓÓÔËYÚÜ\Y]\ÎL^[YÛÙ[\_O]Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KX\Ú[ÝÛN
-_OÜ\Ý[ÛHOOH\ÚÛ\Ý[ÛHOOHXÙ[\]ÜÈXÙ[\]Ü\Ý[ÛHOOH]\Ù]ÈÛHXØÙ[\]ÜBÙ]]Ý[O^ÞÈÛÚ^NNÛÙZYÚ
-ÌÛÛÜ\Ý[ÛHOOH]\Ù]ÈÓÓÔËÙY[ÈÓÓÔË[ÙH_OÜ\Ý[ÛHOOH\ÚÛÈH\Ý[ÛHOOH]\Ù]ÈL	H	Ü\Ý[][\Y\^BÙ]]Ý[O^ÞÈÛÚ^NLKÛÛÜÓÓÔËÙXÛÛ\KX\Ú[Ü_OÜ\Ý[][\Y\X[OÙ]Ù]]Ý[O^ÞÈY[ÎMXÚÙÜÝ[ÓÓÔËYÚÜ\Y]\ÎL^[YÛÙ[\_O]Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KX\Ú[ÝÛN
-_OÛÛ[Z\ÜÚ[ÛÙ]X[Ý\[ÞH\Ù^Ü\Ý[ÛÛ[Z\ÜÚ[ÛHÛÙO^ØÝ\[ÞPÛÙ_H]O^Ù^Ú[ÙT]_HÏÙ]]Ý[O^ÞÈY[ÎMXÚÙÜÝ[ÓÓÔËYÚÜ\Y]\ÎL^[YÛÙ[\_O]Ý[O^ÞÈÛÚ^NLÛÛÜÓÓÔËÙXÛÛ\KX\Ú[ÝÛN
-_O\ÜX[ÙHÛ\ÏÙ]X[Ý\[ÞH\Ù^Ü\Ý[\ÜX[ÙPÛ\ßHÛÙO^ØÝ\[ÞPÛÙ_H]O^Ù^Ú[ÙT]_HÏÙ]Ù]]Ý[O^ÞÈY[ÎXÚÙÜÝ[
-\Ý[ÛHOOHXØÙ[\]Ü\Ý[ÛHOOH]\Ù]HÈ	ÐÓÓÔËÙY[ßLLXÓÓÔËYÚÜ\Y]\ÎL^[YÛÙ[\X\Ú[ÝÛN_O]Ý[O^ÞÈÛÚ^NLËÛÛÜÓÓÔËÙXÛÛ\KX\Ú[ÝÛN
-_OÝ[^[Ý]Ù]X[Ý\[ÞH\Ù^Ü\Ý[Ý[TÑHÛÙO^ØÝ\[ÞPÛÙ_H]O^Ù^Ú[ÙT]_H\ÙHÏÙ]ÜÚÝÐÛÛ]H	
-]Ý[O^ÞÈY[ÎMMXÚÙÜÝ[	ÐÓÓÔËÙY[ßLMXÜ\Y]\ÎÛÚ^NMÛÛÜÓÓÔËÙY[Ë^[YÛÙ[\ÛÙZYÚ
-X\Ú[ÝÛN_OÛÛÜ][][ÛÈH[Ý\X[H\ÈXÝH\Ù]BÙ]
-_BËÊ[X[HXZÙÝÛXH
-
-È\ÊH
-ßBÜ\Ý[PXZÙÝÛ[Ý	
-]ÈÝ[O^ÞÈÛÚ^NMKÛÙZYÚ
-ÌÛÛÜÓÓÔË\ËX\Ú[ÝÛNL_OX[HXZÙÝÛÚÏ]Ý[O^ÞÈÝ\ÝÖ]]È_OXHÝ[O^ÞÈÚYL	HÛÚ^NM_OXYÝ[O^ÞÈXÚÙÜÝ[ÓÓÔË[ÙL_OÖÈY[X\\Ù]XÝX[XÚY][Y[KX\
-O
-Ù^O^ÚHÝ[O^ÞÈY[ÎLM^[YÛYÛÙZYÚ
-ÛÚ^NLÛÛÜÓÓÔË\ËÜ\ÝÛNÛÛY	ÐÓÓÔË[ÙMX_OÚOÝ
-J_BÝÝXYÙOÜ\Ý[PXZÙÝÛX\
+              {/* Threshold not met warning */}
+              {result.thresholdMissed && (
+                <div style={{ padding: "14px 16px", background: `${COLORS.hucknall}10`, borderRadius: 8, fontSize: 13, color: COLORS.hucknall, marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <div style={{ fontWeight: 700, marginBottom: 4 }}>Threshold Not Reached (80%)</div>
+                    <div>Achievement is {pct(result.achievementPct)} which is below the 80% threshold. No commission earned. You need {fmt(Math.ceil(result.totalTarget * 0.8 - result.totalActual))} more MRR to reach the threshold.</div>
+                  </div>
+                </div>
+              )}
 
-JHO
-Ù^O^Ú_HÝ[O^ÞÂXÚÙÜÝ[\ÕX[SXYÈÓÓÔË[ÙLH	HOOHÈÓÓÔËYÚÓÓÔËÚ]K_OÝ[O^ÞÈY[ÎLMÛÙZYÚ\ÕX[SXYÈ
-Ì
-LÛÛÜ\ÕX[SXYÈÓÓÔË[ÙHÓÓÔË\È_OØ[Y_BÝÝ[O^ÞÈY[ÎLM_OÙ]
-\Ù]
-_OÝÝ[O^ÞÈY[ÎLM_OÙ]
-XÝX[
-_OÝÝ[O^ÞÈY[ÎLM_OÜ[Ý[O^ÞÈÛÙZYÚ
-ÛÛÜXÚY][Y[HLÈÓÓÔËÙY[ÈXÚY][Y[H
-\ÕX[SXYÈ
-Ì
-HÈÓÓÔË[ÛÓÓÔËXÚÛ[_OØ\Ù]ÈÝ
-XÚY][Y[
-HÐHBÜÜ[ÝÝ
-J_BÝ[O^ÞÈXÚÙÜÝ[ÓÓÔË\È_OÝ[O^ÞÈY[ÎLMÛÙZYÚ
-ÌÛÛÜÓÓÔËÚ]H_OÝ[ÝÝ[O^ÞÈY[ÎLMÛÙZYÚ
-ÌÛÛÜÓÓÔËÚ]H_OÙ]
-\Ý[Ý[\Ù]
-_OÝÝ[O^ÞÈY[ÎLMÛÙZYÚ
-ÌÛÛÜÓÓÔËÚ]H_OÙ]
-\Ý[Ý[XÝX[
-_OÝÝ[O^ÞÈY[ÎLM_OÜ[Ý[O^ÞÈÛÙZYÚ
-ÌÛÛÜÓÓÔËÚ]H_OÜ\Ý[Ý[\Ù]ÈÝ
-\Ý[XÚY][Y[Ý
-HÐHBÜÜ[ÝÝÝÙOÝXOÙ]Ù]
-_BÏ
-_BÙ]
-_BÙ]
-NÂB
+              {/* Cap hit message */}
+              {result.capHit && (
+                <div style={{ padding: "14px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+                  <Award size={18} />
+                  <div><strong>Cap reached (125%).</strong> Maximum variable earnings achieved. Achievement: {pct(result.achievementPct)}.</div>
+                </div>
+              )}
+
+              <div className="grid-4-col" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+                {[
+                  { label: "Personal Target", value: fmt(result.personalTarget), sub: `${(getTLPersonalPct(bdmCount) * 100).toFixed(0)}% of bdm target` },
+                  { label: "Total Target", value: fmt(result.totalTarget) },
+                  { label: "Total Actual", value: fmt(result.totalActual) },
+                  { label: "Achievement", value: pct(result.achievementPct), color: result.achievementPct >= 100 ? COLORS.ceelo : result.achievementPct >= 80 ? COLORS.elton : COLORS.hucknall },
+                ].map((item, i) => (
+                  <div key={i} style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
+                    <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>{item.label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: item.color || COLORS.dark }}>{item.value}</div>
+                    {item.sub && <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: 2 }}>{item.sub}</div>}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+                <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>Variable Pay</div>
+                  <DualCurrency usd={result.variablePay} code={currencyCode} rate={exchangeRate} />
+                </div>
+                <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>
+                    {result.zone === "Threshold" || result.zone === "Decelerator" ? "Decelerator" : result.zone === "At Target" ? "Zone" : "Accelerator"}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: result.zone === "At Target" ? COLORS.ceelo : COLORS.prince }}>
+                    {result.zone === "Threshold" ? "-" : result.zone === "At Target" ? "100%" : `${result.multiplier}x`}
+                  </div>
+                  <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: 2 }}>{result.multiplierLabel}</div>
+                </div>
+                <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>TL Commission</div>
+                  <DualCurrency usd={result.commission} code={currencyCode} rate={exchangeRate} />
+                </div>
+                <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>Performance Bonus</div>
+                  <DualCurrency usd={result.performanceBonus} code={currencyCode} rate={exchangeRate} />
+                </div>
+              </div>
+
+              <div style={{ padding: 20, background: (result.zone === "Accelerator" || result.zone === "At Target") ? `${COLORS.ceelo}11` : COLORS.light, borderRadius: 10, textAlign: "center", marginBottom: 24 }}>
+                <div style={{ fontSize: 13, color: COLORS.secondary, marginBottom: 6 }}>Total Payout</div>
+                <DualCurrency usd={result.totalUSD} code={currencyCode} rate={exchangeRate} large />
+              </div>
+
+              {showConfetti && (
+                <div style={{ padding: "14px 16px", background: `${COLORS.ceelo}15`, borderRadius: 8, fontSize: 14, color: COLORS.ceelo, textAlign: "center", fontWeight: 600, marginBottom: 24 }}>
+                  Congratulations! Your team is above target!
+                </div>
+              )}
+
+              {/* Full team breakdown table (TL + BDMs) */}
+              {result.bdmBreakdown.length > 0 && (
+                <div>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: COLORS.dark, marginBottom: 12 }}>Team Breakdown</h3>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", fontSize: 14 }}>
+                      <thead>
+                        <tr style={{ background: COLORS.prince20 }}>
+                          {["Member", "Target", "Actual", "Achievement"].map(h => (
+                            <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 600, fontSize: 12, color: COLORS.dark, borderBottom: `2px solid ${COLORS.prince40}` }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {result.bdmBreakdown.map((b, i) => (
+                          <tr key={i} style={{
+                            background: b.isTeamLead ? COLORS.prince20 : i % 2 === 0 ? COLORS.light : COLORS.white,
+                          }}>
+                            <td style={{ padding: "10px 14px", fontWeight: b.isTeamLead ? 700 : 500, color: b.isTeamLead ? COLORS.prince : COLORS.dark }}>
+                              {b.name}
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>{fmt(b.target)}</td>
+                            <td style={{ padding: "10px 14px" }}>{fmt(b.actual)}</td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ fontWeight: 600, color: b.achievement >= 100 ? COLORS.ceelo : b.achievement >= (b.isTeamLead ? 80 : 70) ? COLORS.elton : COLORS.hucknall }}>
+                                {b.target > 0 ? pct(b.achievement) : "N/A"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        <tr style={{ background: COLORS.dark }}>
+                          <td style={{ padding: "10px 14px", fontWeight: 700, color: COLORS.white }}>Total</td>
+                          <td style={{ padding: "10px 14px", fontWeight: 700, color: COLORS.white }}>{fmt(result.totalTarget)}</td>
+                          <td style={{ padding: "10px 14px", fontWeight: 700, color: COLORS.white }}>{fmt(result.totalActual)}</td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{ fontWeight: 700, color: COLORS.white }}>
+                              {result.totalTarget > 0 ? pct(result.achievementPct) : "N/A"}
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
