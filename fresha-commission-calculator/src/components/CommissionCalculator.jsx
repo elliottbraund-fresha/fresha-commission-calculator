@@ -119,7 +119,7 @@ export default function CommissionCalculatorTab() {
           <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
           {localCheckbox(variablePayInLocal, setVariablePayInLocal, variablePay)}
 
-          <InputField label={`Monthly MRR Target (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
+          <InputField label={`Monthly MRR Target${rampMonth === "M1" ? " - Ramp 50%" : ""} (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
           {localCheckbox(monthlyTargetInLocal, setMonthlyTargetInLocal, monthlyTargetUSD)}
 
           <InputField label={`Actual MRR Generated (${actualMRRInLocal && isLocal ? currencyCode : "USD"})`} value={actualMRR} onChange={setActualMRR} prefix={actualMRRInLocal && isLocal ? currencyCode : "$"} />
