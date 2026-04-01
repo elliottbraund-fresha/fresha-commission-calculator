@@ -20,7 +20,9 @@ export default function TeamLeadCalculatorTab() {
   const [result, setResult] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const variablePay = variablePayInLocal && currencyCode !== "USD" && exchangeRate > 0
+  const isLocal = currencyCode !== "USD" && exchangeRate > 0;
+
+  const variablePay = variablePayInLocal && isLocal
     ? variablePayInput / exchangeRate
     : variablePayInput;
 
@@ -50,6 +52,11 @@ export default function TeamLeadCalculatorTab() {
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Currency selector at the top */}
+      <div style={{ ...cardStyle, padding: "16px 24px" }}>
+        <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
+      </div>
+
       <div className="grid-2-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
         {/* Inputs */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -61,8 +68,8 @@ export default function TeamLeadCalculatorTab() {
               ]} />
               <InputField label="Base BDM Target (USD)" value={baseBDMTarget} onChange={setBaseBDMTarget} prefix="$" />
             </div>
-            <InputField label={`Monthly Variable Pay (${variablePayInLocal && currencyCode !== "USD" ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && currencyCode !== "USD" ? (CURRENCIES.find(c => c.code === currencyCode)?.symbol || "$") : "$"} />
-            {currencyCode !== "USD" && (
+            <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
+            {isLocal && (
               <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
                 <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                   <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
@@ -83,7 +90,6 @@ export default function TeamLeadCalculatorTab() {
 
             <InputField label="TL Personal MRR Generated (USD)" value={tlPersonalMRR} onChange={setTlPersonalMRR} prefix="$" />
             <InputField label="TL One-Time Revenue Sold (USD)" value={tlOneTimeRevenue} onChange={setTlOneTimeRevenue} prefix="$" />
-            <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
             <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
               <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
                 <Users size={18} /> Calculate TL Commission
@@ -195,7 +201,7 @@ export default function TeamLeadCalculatorTab() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>Variable Pay</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.dark }}>{fmt(result.variablePay, 2)}</div>
+                  <DualCurrency usd={result.variablePay} code={currencyCode} rate={exchangeRate} />
                 </div>
                 <div style={{ padding: 16, background: COLORS.light, borderRadius: 10, textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: COLORS.secondary, marginBottom: 6 }}>
@@ -223,7 +229,7 @@ export default function TeamLeadCalculatorTab() {
 
               {showConfetti && (
                 <div style={{ padding: "14px 16px", background: `${COLORS.ceelo}15`, borderRadius: 8, fontSize: 14, color: COLORS.ceelo, textAlign: "center", fontWeight: 600, marginBottom: 24 }}>
-                  ð Congratulations! Your team is above target!
+                  Congratulations! Your team is above target!
                 </div>
               )}
 
