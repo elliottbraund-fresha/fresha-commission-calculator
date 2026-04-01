@@ -114,7 +114,7 @@ export function calcBDMCommission({
       // Cap at 100% variable, no accelerator bonus
       result.zone = "At Target";
       result.multiplier = 1;
-      result.multiplierLabl = "Accelerator locked (M1)";
+      result.multiplierLabel = "Accelerator locked (M1)";
       result.variableEarningsPct = 100;
       result.insightMessage = `M1 Ramp: You've exceeded your reduced target but accelerators don't unlock until you hit the full target of ${fullTarget}. You need ${Math.ceil(fullTarget - actualMRR)} more MRR to unlock accelerators.`;
     } else {
