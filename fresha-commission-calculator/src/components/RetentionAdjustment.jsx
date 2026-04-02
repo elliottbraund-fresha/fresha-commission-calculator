@@ -38,6 +38,13 @@ export default function RetentionAdjustmentTab() {
   const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
   const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
 
+  const showHint = enterInLocal && isLocal;
+  const usdHint = (val) => showHint ? (
+    <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
+      â {fmt(val / exchangeRate, 2)} USD
+    </div>
+  ) : null;
+
   const handleCalc = () => {
     setResult(calcRetention({
       originalMRR: originalMRRUSD, retainedMRR: retainedMRRUSD, variablePay, dealCount,
@@ -94,10 +101,14 @@ export default function RetentionAdjustmentTab() {
           )}
 
           <InputField label={`Monthly Variable Pay (${currLabel})`} value={variablePayInput} onChange={setVariablePayInput} prefix={currPrefix} />
+          {usdHint(variablePayInput)}
           <InputField label={`Monthly MRR Target (${currLabel})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={currPrefix} />
+          {usdHint(monthlyTarget)}
           <InputField label="Number of Deals Signed - Month 0" value={dealCount} onChange={setDealCount} min={0} />
           <InputField label={`Original MRR Signed - Month 0 (${currLabel})`} value={originalMRR} onChange={setOriginalMRR} prefix={currPrefix} />
+          {usdHint(originalMRR)}
           <InputField label={`MRR Retained - End of Month 4 (${currLabel})`} value={retainedMRR} onChange={setRetainedMRR} prefix={currPrefix} />
+          {usdHint(retainedMRR)}
 
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
