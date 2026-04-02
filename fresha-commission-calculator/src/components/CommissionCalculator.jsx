@@ -148,7 +148,11 @@ export default function CommissionCalculatorTab() {
 
               {calculated.rampMessage && (
                 <div style={{ padding: "12px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                  <Info size={16} /> {calculated.rampMessage}
+                  <Info size={16} /> {calculated.rampMessage.replace(/\$[\d,.]+/g, (match) => {
+                const num = parseFloat(match.replace(/[$,]/g, ''));
+                if (isNaN(num)) return match;
+                return fmtInsight(num);
+              })}
                 </div>
               )}
 
