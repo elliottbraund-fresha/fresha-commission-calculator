@@ -7,62 +7,47 @@ import { calcTLCommission, getTLPersonalPct } from '../utils/teamLeadCalc.js';
 export default function TeamLeadCalculatorTab() {
   const [rampMonth, setRampMonth] = useState("M1+");
   const [variablePayInput, setVariablePayInput] = useState(5000);
-  const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [baseBDMTarget, setBaseBDMTarget] = useState(10000);
-  const [baseBDMTargetInLocal, setBaseBDMTargetInLocal] = useState(false);
   const [bdmCount, setBdmCount] = useState(3);
   const [bdmTargets, setBdmTargets] = useState([10000, 10000, 10000]);
   const [bdmActuals, setBdmActuals] = useState([9000, 11000, 8000]);
   const [bdmNames, setBdmNames] = useState(["", "", ""]);
   const [tlPersonalMRR, setTlPersonalMRR] = useState(6000);
-  const [tlPersonalMRRInLocal, setTlPersonalMRRInLocal] = useState(false);
   const [tlOneTimeRevenue, setTlOneTimeRevenue] = useState(3000);
-  const [tlOneTimeRevenueInLocal, setTlOneTimeRevenueInLocal] = useState(false);
-  const [bdmTargetsInLocal, setBdmTargetsInLocal] = useState(false);
-  const [bdmActualsInLocal, setBdmActualsInLocal] = useState(false);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
+  const [enterInLocal, setEnterInLocal] = useState(false);
   const [result, setResult] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   const isLocal = currencyCode !== "USD" && exchangeRate > 0;
 
-  const variablePay = variablePayInLocal && isLocal
+  const variablePay = enterInLocal && isLocal
     ? variablePayInput / exchangeRate
     : variablePayInput;
 
-  const tlPersonalMRRUSD = tlPersonalMRRInLocal && isLocal
+  const tlPersonalMRRUSD = enterInLocal && isLocal
     ? tlPersonalMRR / exchangeRate
     : tlPersonalMRR;
 
-  const tlOneTimeRevenueUSD = tlOneTimeRevenueInLocal && isLocal
+  const tlOneTimeRevenueUSD = enterInLocal && isLocal
     ? tlOneTimeRevenue / exchangeRate
     : tlOneTimeRevenue;
 
-  const bdmTargetsUSD = bdmTargetsInLocal && isLocal
+  const bdmTargetsUSD = enterInLocal && isLocal
     ? bdmTargets.map(t => t / exchangeRate)
     : bdmTargets;
 
-  const baseBDMTargetUSD = baseBDMTargetInLocal && isLocal
+  const baseBDMTargetUSD = enterInLocal && isLocal
     ? baseBDMTarget / exchangeRate
     : baseBDMTarget;
 
-  const bdmActualsUSD = bdmActualsInLocal && isLocal
+  const bdmActualsUSD = enterInLocal && isLocal
     ? bdmActuals.map(a => a / exchangeRate)
     : bdmActuals;
 
-  const localCheckbox = (checked, setCh, usdValue) => {
-    if (!isLocal) return null;
-    return (
-      <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-        <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <input type="checkbox" checked={checked} onChange={e => setCh(e.target.checked)} />
-          Enter in {currencyCode}
-        </label>
-        {checked && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(usdValue, 2)} USD</span>}
-      </div>
-    );
-  };
+  const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
+  const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
 
   const handleBdmCountChange = (count) => {
     const n = Math.max(0, Math.min(15, typeof count === "string" ? parseInt(count, 10) || 0 : count));
@@ -93,6 +78,14 @@ export default function TeamLeadCalculatorTab() {
       {/* Currency selector at the top */}
       <div style={{ ...cardStyle, padding: "16px 24px" }}>
         <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
+        {isLocal && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+            <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <input type="checkbox" checked={enterInLocal} onChange={e => setEnterInLocal(e.target.checked)} />
+              Enter values in {currencyCode}
+            </label>
+          </div>
+        )}
       </div>
 
       <div className="grid-2-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
@@ -104,19 +97,9 @@ export default function TeamLeadCalculatorTab() {
               <SelectField label="Ramp Month" value={rampMonth} onChange={setRampMonth} options={[
                 { value: "M0", label: "M0 (Training)" }, { value: "M1+", label: "M1+ (Full)" },
               ]} />
-              <InputField label={`Base BDM Target (${baseBDMTargetInLocal && isLocal ? currencyCode : "USD"})`} value={baseBDMTarget} onChange={setBaseBDMTarget} prefix={baseBDMTargetInLocal && isLocal ? currencyCode : "$"} />
+              <InputField label={`Base BDM Target (${currLabel})`} value={baseBDMTarget} onChange={setBaseBDMTarget} prefix={currPrefix} />
             </div>
-            {localCheckbox(baseBDMTargetInLocal, setBaseBDMTargetInLocal, baseBDMTargetUSD)}
-            <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
-            {isLocal && (
-              <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                  <input type="checkbox" checked={variablePayInLocal} onChange={e => setVariablePayInLocal(e.target.checked)} />
-                  Enter in {currencyCode}
-                </label>
-                {variablePayInLocal && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(variablePay, 2)} USD</span>}
-              </div>
-            )}
+            <InputField label={`Monthly Variable Pay (${currLabel})`} value={variablePayInput} onChange={setVariablePayInput} prefix={currPrefix} />
             <InputField label="Number of Quota-Carrying BDMs" value={bdmCount} onChange={handleBdmCountChange} min={0} />
 
             <div style={{ padding: "12px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16 }}>
@@ -127,10 +110,8 @@ export default function TeamLeadCalculatorTab() {
               <strong>TL Commission Rules:</strong> Threshold 80% | Decelerator 2x | Accelerator 2x | Cap 125%
             </div>
 
-            <InputField label={`TL Personal MRR Generated (${tlPersonalMRRInLocal && isLocal ? currencyCode : "USD"})`} value={tlPersonalMRR} onChange={setTlPersonalMRR} prefix={tlPersonalMRRInLocal && isLocal ? currencyCode : "$"} />
-            {localCheckbox(tlPersonalMRRInLocal, setTlPersonalMRRInLocal, tlPersonalMRRUSD)}
-            <InputField label={`TL One-Time Revenue Sold (${tlOneTimeRevenueInLocal && isLocal ? currencyCode : "USD"})`} value={tlOneTimeRevenue} onChange={setTlOneTimeRevenue} prefix={tlOneTimeRevenueInLocal && isLocal ? currencyCode : "$"} />
-            {localCheckbox(tlOneTimeRevenueInLocal, setTlOneTimeRevenueInLocal, tlOneTimeRevenueUSD)}
+            <InputField label={`TL Personal MRR Generated (${currLabel})`} value={tlPersonalMRR} onChange={setTlPersonalMRR} prefix={currPrefix} />
+            <InputField label={`TL One-Time Revenue Sold (${currLabel})`} value={tlOneTimeRevenue} onChange={setTlOneTimeRevenue} prefix={currPrefix} />
             <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
               <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
                 <Users size={18} /> Calculate TL Commission
@@ -147,7 +128,7 @@ export default function TeamLeadCalculatorTab() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) 1fr 1fr", gap: 8, fontSize: 12, fontWeight: 600, color: COLORS.secondary, paddingBottom: 8, borderBottom: `1px solid ${COLORS.border}` }}>
-                <div>Name</div><div>Target ({bdmTargetsInLocal && isLocal ? currencyCode : "USD"})</div><div>Actual ({bdmActualsInLocal && isLocal ? currencyCode : "USD"})</div>
+                <div>Name</div><div>Target ({currLabel})</div><div>Actual ({currLabel})</div>
               </div>
               {Array.from({ length: bdmCount }).map((_, i) => (
                 <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) 1fr 1fr", gap: 8, alignItems: "center" }}>
@@ -175,18 +156,6 @@ export default function TeamLeadCalculatorTab() {
                   />
                 </div>
               ))}
-              {isLocal && (
-                <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
-                  <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                    <input type="checkbox" checked={bdmTargetsInLocal} onChange={e => setBdmTargetsInLocal(e.target.checked)} />
-                    Targets in {currencyCode}
-                  </label>
-                  <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                    <input type="checkbox" checked={bdmActualsInLocal} onChange={e => setBdmActualsInLocal(e.target.checked)} />
-                    Actuals in {currencyCode}
-                  </label>
-                </div>
-              )}
             </div>
           )}
         </div>
