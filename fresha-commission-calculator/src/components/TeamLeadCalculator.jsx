@@ -161,7 +161,7 @@ export default function TeamLeadCalculatorTab() {
                     value={bdmActuals[i] ?? 0}
                     onChange={e => { const v = [...bdmActuals]; v[i] = Number(e.target.value); setBdmActuals(v); }}
                     style={{ ...inputStyle, padding: "8px 10px", fontSize: 13 }}
-                    aria-label={eBDM ${i + 1} Actual`}
+                    aria-label={`BDM ${i + 1} Actual`}
                   />
                 </div>
               ))}
