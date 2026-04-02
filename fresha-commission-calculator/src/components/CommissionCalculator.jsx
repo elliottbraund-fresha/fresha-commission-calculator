@@ -76,6 +76,13 @@ export default function CommissionCalculatorTab() {
   const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
   const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
 
+  const showHint = enterInLocal && isLocal;
+  const usdHint = (val) => showHint ? (
+    <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
+      â {fmt(val / exchangeRate, 2)} USD
+    </div>
+  ) : null;
+
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Currency selector at the top */}
@@ -104,10 +111,14 @@ export default function CommissionCalculatorTab() {
             ]} />
           </div>
           <InputField label={`Monthly Variable Pay (${currLabel})`} value={variablePayInput} onChange={setVariablePayInput} prefix={currPrefix} />
+          {usdHint(variablePayInput)}
           <InputField label={`Monthly MRR Target${rampMonth === "M1" ? " - Ramp 50%" : ""} (${currLabel})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={currPrefix} />
+          {usdHint(monthlyTarget)}
           <InputField label={`Actual MRR Generated (${currLabel})`} value={actualMRR} onChange={setActualMRR} prefix={currPrefix} />
+          {usdHint(actualMRR)}
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
           <InputField label={`One-Time Revenue Sold (${currLabel})`} value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix={currPrefix} />
+          {usdHint(oneTimeRevenue)}
 
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
