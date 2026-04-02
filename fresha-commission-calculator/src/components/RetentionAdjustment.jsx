@@ -8,48 +8,35 @@ export default function RetentionAdjustmentTab() {
   const [role, setRole] = useState("BDM");
   const [rampMonth, setRampMonth] = useState("M2+");
   const [variablePayInput, setVariablePayInput] = useState(3000);
-  const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
-  const [monthlyTargetInLocal, setMonthlyTargetInLocal] = useState(false);
   const [dealCount, setDealCount] = useState(5);
   const [originalMRR, setOriginalMRR] = useState(12000);
-  const [originalMRRInLocal, setOriginalMRRInLocal] = useState(false);
   const [retainedMRR, setRetainedMRR] = useState(9500);
-  const [retainedMRRInLocal, setRetainedMRRInLocal] = useState(false);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
+  const [enterInLocal, setEnterInLocal] = useState(false);
   const [result, setResult] = useState(null);
 
   const isLocal = currencyCode !== "USD" && exchangeRate > 0;
 
-  const variablePay = variablePayInLocal && isLocal
+  const variablePay = enterInLocal && isLocal
     ? variablePayInput / exchangeRate
     : variablePayInput;
 
-  const monthlyTargetUSD = monthlyTargetInLocal && isLocal
+  const monthlyTargetUSD = enterInLocal && isLocal
     ? monthlyTarget / exchangeRate
     : monthlyTarget;
 
-  const originalMRRUSD = originalMRRInLocal && isLocal
+  const originalMRRUSD = enterInLocal && isLocal
     ? originalMRR / exchangeRate
     : originalMRR;
 
-  const retainedMRRUSD = retainedMRRInLocal && isLocal
+  const retainedMRRUSD = enterInLocal && isLocal
     ? retainedMRR / exchangeRate
     : retainedMRR;
 
-  const localCheckbox = (checked, setCh, usdValue) => {
-    if (!isLocal) return null;
-    return (
-      <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-        <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <input type="checkbox" checked={checked} onChange={e => setCh(e.target.checked)} />
-          Enter in {currencyCode}
-        </label>
-        {checked && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(usdValue, 2)} USD</span>}
-      </div>
-    );
-  };
+  const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
+  const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
 
   const handleCalc = () => {
     setResult(calcRetention({
@@ -97,20 +84,20 @@ export default function RetentionAdjustmentTab() {
             ]} />
           </div>
           <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
+          {isLocal && (
+            <div style={{ marginTop: 8, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+              <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <input type="checkbox" checked={enterInLocal} onChange={e => setEnterInLocal(e.target.checked)} />
+                Enter values in {currencyCode}
+              </label>
+            </div>
+          )}
 
-          <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(variablePayInLocal, setVariablePayInLocal, variablePay)}
-
-          <InputField label={`Monthly MRR Target (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(monthlyTargetInLocal, setMonthlyTargetInLocal, monthlyTargetUSD)}
-
+          <InputField label={`Monthly Variable Pay (${currLabel})`} value={variablePayInput} onChange={setVariablePayInput} prefix={currPrefix} />
+          <InputField label={`Monthly MRR Target (${currLabel})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={currPrefix} />
           <InputField label="Number of Deals Signed - Month 0" value={dealCount} onChange={setDealCount} min={0} />
-
-          <InputField label={`Original MRR Signed - Month 0 (${originalMRRInLocal && isLocal ? currencyCode : "USD"})`} value={originalMRR} onChange={setOriginalMRR} prefix={originalMRRInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(originalMRRInLocal, setOriginalMRRInLocal, originalMRRUSD)}
-
-          <InputField label={`MRR Retained - End of Month 4 (${retainedMRRInLocal && isLocal ? currencyCode : "USD"})`} value={retainedMRR} onChange={setRetainedMRR} prefix={retainedMRRInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(retainedMRRInLocal, setRetainedMRRInLocal, retainedMRRUSD)}
+          <InputField label={`Original MRR Signed - Month 0 (${currLabel})`} value={originalMRR} onChange={setOriginalMRR} prefix={currPrefix} />
+          <InputField label={`MRR Retained - End of Month 4 (${currLabel})`} value={retainedMRR} onChange={setRetainedMRR} prefix={currPrefix} />
 
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
