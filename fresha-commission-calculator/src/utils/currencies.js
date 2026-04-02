@@ -16,6 +16,8 @@ export const CURRENCIES = [
   { code: "PHP", name: "Philippine Peso", symbol: "PHP", rate: 56.0 },
   { code: "ZAR", name: "South African Rand", symbol: "ZAR", rate: 18.5 },
   { code: "MYR", name: "Malaysian Ringgit", symbol: "MYR", rate: 4.45 },
+  { code: "QAR", name: "Qatari Riyal", symbol: "QAR", rate: 3.64 },
+  { code: "OMR", name: "Omani Riyal", symbol: "OMR", rate: 0.385 },
 ];
 
 export function fmt(v, decimals = 0) {
