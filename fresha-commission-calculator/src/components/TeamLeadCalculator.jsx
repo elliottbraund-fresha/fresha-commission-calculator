@@ -49,6 +49,13 @@ export default function TeamLeadCalculatorTab() {
   const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
   const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
 
+  const showHint = enterInLocal && isLocal;
+  const usdHint = (val) => showHint ? (
+    <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
+      â {fmt(val / exchangeRate, 2)} USD
+    </div>
+  ) : null;
+
   const handleBdmCountChange = (count) => {
     const n = Math.max(0, Math.min(15, typeof count === "string" ? parseInt(count, 10) || 0 : count));
     setBdmCount(n);
@@ -99,10 +106,10 @@ export default function TeamLeadCalculatorTab() {
               ]} />
               <InputField label={`Base BDM Target (${currLabel})`} value={baseBDMTarget} onChange={setBaseBDMTarget} prefix={currPrefix} />
             </div>
+            {usdHint(baseBDMTarget)}
             <InputField label={`Monthly Variable Pay (${currLabel})`} value={variablePayInput} onChange={setVariablePayInput} prefix={currPrefix} />
-            <InputField label="Number of Quota-Carrying BDMs" value={bdmCount} onChange={handleBdmCountChange} min={0} />
-
-            <div style={{ padding: "12px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16 }}>
+            {usdHint(variablePayInput)}
+            <InputField label="Number of Quota-Carrying BDMs" value={bdmCount} onChange={handleBdmCountChange} min={0} />            <div style={{ padding: "12px 16px", background: COLORS.prince20, borderRadius: 8, fontSize: 13, color: COLORS.prince, marginBottom: 16 }}>
               <strong>Personal Target Scale:</strong> {bdmCount === 0 ? "150%" : bdmCount <= 3 ? "80%" : bdmCount <= 6 ? "33%" : "0%"} of BDM target = {fmt(baseBDMTargetUSD * getTLPersonalPct(bdmCount))}
             </div>
 
@@ -111,7 +118,9 @@ export default function TeamLeadCalculatorTab() {
             </div>
 
             <InputField label={`TL Personal MRR Generated (${currLabel})`} value={tlPersonalMRR} onChange={setTlPersonalMRR} prefix={currPrefix} />
+            {usdHint(tlPersonalMRR)}
             <InputField label={`TL One-Time Revenue Sold (${currLabel})`} value={tlOneTimeRevenue} onChange={setTlOneTimeRevenue} prefix={currPrefix} />
+            {usdHint(tlOneTimeRevenue)}
             <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
               <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
                 <Users size={18} /> Calculate TL Commission
@@ -152,7 +161,7 @@ export default function TeamLeadCalculatorTab() {
                     value={bdmActuals[i] ?? 0}
                     onChange={e => { const v = [...bdmActuals]; v[i] = Number(e.target.value); setBdmActuals(v); }}
                     style={{ ...inputStyle, padding: "8px 10px", fontSize: 13 }}
-                    aria-label={`BDM ${i + 1} Actual`}
+                    aria-label={eBDM ${i + 1} Actual`}
                   />
                 </div>
               ))}
