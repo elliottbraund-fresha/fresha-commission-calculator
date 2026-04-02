@@ -11,7 +11,7 @@ export default function RetentionAdjustmentTab() {
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
   const [dealCount, setDealCount] = useState(5);
   const [originalMRR, setOriginalMRR] = useState(12000);
-  const [retainedMRR, setRetainedMRR] = useState(9500);
+  const [mrrChurned, setMrrChurned] = useState(2500);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [enterInLocal, setEnterInLocal] = useState(false);
@@ -31,9 +31,11 @@ export default function RetentionAdjustmentTab() {
     ? originalMRR / exchangeRate
     : originalMRR;
 
-  const retainedMRRUSD = enterInLocal && isLocal
-    ? retainedMRR / exchangeRate
-    : retainedMRR;
+  const mrrChurnedUSD = enterInLocal && isLocal
+    ? mrrChurned / exchangeRate
+    : mrrChurned;
+
+  const retainedMRRUSD = originalMRRUSD - mrrChurnedUSD;
 
   const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
   const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
@@ -107,8 +109,8 @@ export default function RetentionAdjustmentTab() {
           <InputField label="Number of Deals Signed - Month 0" value={dealCount} onChange={setDealCount} min={0} />
           <InputField label={`Original MRR Signed - Month 0 (${currLabel})`} value={originalMRR} onChange={setOriginalMRR} prefix={currPrefix} />
           {usdHint(originalMRR)}
-          <InputField label={`MRR Retained - End of Month 4 (${currLabel})`} value={retainedMRR} onChange={setRetainedMRR} prefix={currPrefix} />
-          {usdHint(retainedMRR)}
+          <InputField label={`MRR Churned (${currLabel})`} value={mrrChurned} onChange={setMrrChurned} prefix={currPrefix} />
+          {usdHint(mrrChurned)}
 
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
