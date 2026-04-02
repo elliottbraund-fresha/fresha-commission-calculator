@@ -11,34 +11,31 @@ export default function CommissionCalculatorTab() {
   const [role, setRole] = useState("BDM");
   const [rampMonth, setRampMonth] = useState("M2+");
   const [variablePayInput, setVariablePayInput] = useState(3000);
-  const [variablePayInLocal, setVariablePayInLocal] = useState(false);
   const [monthlyTarget, setMonthlyTarget] = useState(10000);
-  const [monthlyTargetInLocal, setMonthlyTargetInLocal] = useState(false);
   const [actualMRR, setActualMRR] = useState(8500);
-  const [actualMRRInLocal, setActualMRRInLocal] = useState(false);
   const [dealCount, setDealCount] = useState(5);
   const [currencyCode, setCurrencyCode] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [oneTimeRevenue, setOneTimeRevenue] = useState(2000);
-  const [oneTimeRevenueInLocal, setOneTimeRevenueInLocal] = useState(false);
+  const [enterInLocal, setEnterInLocal] = useState(false);
   const [calculated, setCalculated] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   const isLocal = currencyCode !== "USD" && exchangeRate > 0;
 
-  const variablePay = variablePayInLocal && isLocal
+  const variablePay = enterInLocal && isLocal
     ? variablePayInput / exchangeRate
     : variablePayInput;
 
-  const monthlyTargetUSD = monthlyTargetInLocal && isLocal
+  const monthlyTargetUSD = enterInLocal && isLocal
     ? monthlyTarget / exchangeRate
     : monthlyTarget;
 
-  const actualMRRUSD = actualMRRInLocal && isLocal
+  const actualMRRUSD = enterInLocal && isLocal
     ? actualMRR / exchangeRate
     : actualMRR;
 
-  const oneTimeRevenueUSD = oneTimeRevenueInLocal && isLocal
+  const oneTimeRevenueUSD = enterInLocal && isLocal
     ? oneTimeRevenue / exchangeRate
     : oneTimeRevenue;
 
@@ -49,7 +46,7 @@ export default function CommissionCalculatorTab() {
       currencyCode, exchangeRate,
     });
     setCalculated(result);
-    if (result.achievementPct > 100 && result.zone !== "No Commission" && result.zÃne !== "Threshold") {
+    if (result.achievementPct > 100 && result.zone !== "No Commission" && result.zone !== "Threshold") {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
     }
@@ -76,33 +73,22 @@ export default function CommissionCalculatorTab() {
     return fmt(v, 0);
   };
 
-  // Build a local-aware label suffix
-  const inputCurrencyLabel = (baseLabel) => {
-    const fieldLocal = baseLabel.includes("Variable Pay") ? variablePayInLocal :
-                       baseLabel.includes("MRR Target") ? monthlyTargetInLocal :
-                       baseLabel.includes("Actual MRR") ? actualMRRInLocal :
-                       baseLabel.includes("One-Time") ? oneTimeRevenueInLocal : false;
-    return fieldLocal && isLocal ? currencyCode : "USD";
-  };
-
-  const localCheckbox = (checked, setCh, label) => {
-    if (!isLocal) return null;
-    return (
-      <div style={{ marginTop: -12, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-        <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <input type="checkbox" checked={checked} onChange={e => setCh(e.target.checked)} />
-          Enter in {currencyCode}
-        </label>
-        {checked && <span style={{ fontSize: 12, color: COLORS.secondary }}>= {fmt(label, 2)} USD</span>}
-      </div>
-    );
-  };
+  const currLabel = enterInLocal && isLocal ? currencyCode : "USD";
+  const currPrefix = enterInLocal && isLocal ? currencyCode : "$";
 
   return (
     <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Currency selector at the top */}
       <div style={{ ...cardStyle, padding: "16px 24px" }}>
         <CurrencySelector currencyCode={currencyCode} setCurrencyCode={setCurrencyCode} exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} />
+        {isLocal && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+            <label style={{ fontSize: 12, color: COLORS.secondary, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <input type="checkbox" checked={enterInLocal} onChange={e => setEnterInLocal(e.target.checked)} />
+              Enter values in {currencyCode}
+            </label>
+          </div>
+        )}
       </div>
 
       <div className="grid-2-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
@@ -117,19 +103,11 @@ export default function CommissionCalculatorTab() {
               { value: "M0", label: "M0 (Training)" }, { value: "M1", label: "M1 (Ramp)" }, { value: "M2+", label: "M2+ (Full)" },
             ]} />
           </div>
-          <InputField label={`Monthly Variable Pay (${variablePayInLocal && isLocal ? currencyCode : "USD"})`} value={variablePayInput} onChange={setVariablePayInput} prefix={variablePayInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(variablePayInLocal, setVariablePayInLocal, variablePay)}
-
-          <InputField label={`Monthly MRR Target${rampMonth === "M1" ? " - Ramp 50%" : ""} (${monthlyTargetInLocal && isLocal ? currencyCode : "USD"})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={monthlyTargetInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(monthlyTargetInLocal, setMonthlyTargetInLocal, monthlyTargetUSD)}
-
-          <InputField label={`Actual MRR Generated (${actualMRRInLocal && isLocal ? currencyCode : "USD"})`} value={actualMRR} onChange={setActualMRR} prefix={actualMRRInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(actualMRRInLocal, setActualMRRInLocal, actualMRRUSD)}
-
+          <InputField label={`Monthly Variable Pay (${currLabel})`} value={variablePayInput} onChange={setVariablePayInput} prefix={currPrefix} />
+          <InputField label={`Monthly MRR Target${rampMonth === "M1" ? " - Ramp 50%" : ""} (${currLabel})`} value={monthlyTarget} onChange={setMonthlyTarget} prefix={currPrefix} />
+          <InputField label={`Actual MRR Generated (${currLabel})`} value={actualMRR} onChange={setActualMRR} prefix={currPrefix} />
           <InputField label="Number of Deals Signed" value={dealCount} onChange={setDealCount} min={0} />
-
-          <InputField label={`One-Time Revenue Sold (${oneTimeRevenueInLocal && isLocal ? currencyCode : "USD"})`} value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix={oneTimeRevenueInLocal && isLocal ? currencyCode : "$"} />
-          {localCheckbox(oneTimeRevenueInLocal, setOneTimeRevenueInLocal, oneTimeRevenueUSD)}
+          <InputField label={`One-Time Revenue Sold (${currLabel})`} value={oneTimeRevenue} onChange={setOneTimeRevenue} prefix={currPrefix} />
 
           <button onClick={handleCalc} style={btnPrimary} onMouseOver={e => e.target.style.background = COLORS.prince80} onMouseOut={e => e.target.style.background = COLORS.prince}>
             <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
@@ -216,8 +194,8 @@ export default function CommissionCalculatorTab() {
                     <DualCurrency usd={calculated.totalUSD} code={currencyCode} rate={exchangeRate} large />
                     {calculated.variableEarningsPct !== undefined && (
                       <div style={{ fontSize: 12, color: COLORS.secondary, marginTop: 6 }}>
-                        Variable earnings at {calculated.variableEarningsPct.toFixed(1)}% of {fmtInsight(variablePay,)}
-                     </div>
+                        Variable earnings at {calculated.variableEarningsPct.toFixed(1)}% of {fmtInsight(variablePay)}
+                      </div>
                     )}
                   </div>
 
