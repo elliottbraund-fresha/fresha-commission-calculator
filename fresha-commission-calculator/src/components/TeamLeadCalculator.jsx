@@ -3,20 +3,21 @@ import { Users, Info, AlertTriangle, Award } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, inputStyle, InputField, SelectField, DualCurrency, ZoneBadge, CurrencySelector } from './shared.jsx';
 import { fmt, fmtLocal, pct, CURRENCIES } from '../utils/currencies.js';
 import { calcTLCommission, getTLPersonalPct } from '../utils/teamLeadCalc.js';
+import { usePersistedState } from '../utils/usePersistedState.js';
 
 export default function TeamLeadCalculatorTab() {
-  const [rampMonth, setRampMonth] = useState("M1+");
-  const [variablePayInput, setVariablePayInput] = useState(5000);
-  const [baseBDMTarget, setBaseBDMTarget] = useState(10000);
-  const [bdmCount, setBdmCount] = useState(3);
-  const [bdmTargets, setBdmTargets] = useState([10000, 10000, 10000]);
-  const [bdmActuals, setBdmActuals] = useState([9000, 11000, 8000]);
-  const [bdmNames, setBdmNames] = useState(["", "", ""]);
-  const [tlPersonalMRR, setTlPersonalMRR] = useState(6000);
-  const [tlOneTimeRevenue, setTlOneTimeRevenue] = useState(3000);
-  const [currencyCode, setCurrencyCode] = useState("USD");
-  const [exchangeRate, setExchangeRate] = useState(1.0);
-  const [enterInLocal, setEnterInLocal] = useState(false);
+  const [rampMonth, setRampMonth] = usePersistedState("tl-rampMonth", "M1+");
+  const [variablePayInput, setVariablePayInput] = usePersistedState("tl-variablePay", 5000);
+  const [baseBDMTarget, setBaseBDMTarget] = usePersistedState("tl-baseBDMTarget", 10000);
+  const [bdmCount, setBdmCount] = usePersistedState("tl-bdmCount", 3);
+  const [bdmTargets, setBdmTargets] = usePersistedState("tl-bdmTargets", [10000, 10000, 10000]);
+  const [bdmActuals, setBdmActuals] = usePersistedState("tl-bdmActuals", [9000, 11000, 8000]);
+  const [bdmNames, setBdmNames] = usePersistedState("tl-bdmNames", ["", "", ""]);
+  const [tlPersonalMRR, setTlPersonalMRR] = usePersistedState("tl-personalMRR", 6000);
+  const [tlOneTimeRevenue, setTlOneTimeRevenue] = usePersistedState("tl-oneTimeRevenue", 3000);
+  const [currencyCode, setCurrencyCode] = usePersistedState("tl-currencyCode", "USD");
+  const [exchangeRate, setExchangeRate] = usePersistedState("tl-exchangeRate", 1.0);
+  const [enterInLocal, setEnterInLocal] = usePersistedState("tl-enterInLocal", false);
   const [result, setResult] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -52,7 +53,7 @@ export default function TeamLeadCalculatorTab() {
   const showHint = enterInLocal && isLocal;
   const usdHint = (val) => showHint ? (
     <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
-      ≈ {fmt(val / exchangeRate, 2)} USD
+      â {fmt(val / exchangeRate, 2)} USD
     </div>
   ) : null;
 
