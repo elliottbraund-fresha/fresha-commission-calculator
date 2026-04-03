@@ -3,18 +3,19 @@ import { RotateCcw, Info, CheckCircle, AlertTriangle } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, InputField, SelectField, DualCurrency, CurrencySelector, ZoneBadge } from './shared.jsx';
 import { fmt, fmtLocal, pct, CURRENCIES } from '../utils/currencies.js';
 import { calcRetention } from '../utils/retentionCalc.js';
+import { usePersistedState } from '../utils/usePersistedState.js';
 
 export default function RetentionAdjustmentTab() {
-  const [role, setRole] = useState("BDM");
-  const [rampMonth, setRampMonth] = useState("M2+");
-  const [variablePayInput, setVariablePayInput] = useState(3000);
-  const [monthlyTarget, setMonthlyTarget] = useState(10000);
-  const [dealCount, setDealCount] = useState(5);
-  const [originalMRR, setOriginalMRR] = useState(12000);
-  const [mrrChurned, setMrrChurned] = useState(2500);
-  const [currencyCode, setCurrencyCode] = useState("USD");
-  const [exchangeRate, setExchangeRate] = useState(1.0);
-  const [enterInLocal, setEnterInLocal] = useState(false);
+  const [role, setRole] = usePersistedState("ret-role", "BDM");
+  const [rampMonth, setRampMonth] = usePersistedState("ret-rampMonth", "M2+");
+  const [variablePayInput, setVariablePayInput] = usePersistedState("ret-variablePay", 3000);
+  const [monthlyTarget, setMonthlyTarget] = usePersistedState("ret-monthlyTarget", 10000);
+  const [dealCount, setDealCount] = usePersistedState("ret-dealCount", 5);
+  const [originalMRR, setOriginalMRR] = usePersistedState("ret-originalMRR", 12000);
+  const [mrrChurned, setMrrChurned] = usePersistedState("ret-mrrChurned", 2500);
+  const [currencyCode, setCurrencyCode] = usePersistedState("ret-currencyCode", "USD");
+  const [exchangeRate, setExchangeRate] = usePersistedState("ret-exchangeRate", 1.0);
+  const [enterInLocal, setEnterInLocal] = usePersistedState("ret-enterInLocal", false);
   const [result, setResult] = useState(null);
 
   const isLocal = currencyCode !== "USD" && exchangeRate > 0;
@@ -43,7 +44,7 @@ export default function RetentionAdjustmentTab() {
   const showHint = enterInLocal && isLocal;
   const usdHint = (val) => showHint ? (
     <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
-      ≈ {fmt(val / exchangeRate, 2)} USD
+      â {fmt(val / exchangeRate, 2)} USD
     </div>
   ) : null;
 
