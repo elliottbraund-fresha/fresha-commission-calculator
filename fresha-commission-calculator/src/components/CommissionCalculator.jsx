@@ -6,18 +6,19 @@ import { Calculator, Info, AlertTriangle, TrendingUp } from 'lucide-react';
 import { COLORS, cardStyle, btnPrimary, InputField, SelectField, DualCurrency, ZoneBadge, CurrencySelector } from './shared.jsx';
 import { fmt, fmtLocal, fmtCurrency, pct, CURRENCIES } from '../utils/currencies.js';
 import { calcBDMCommission, generateCurveData } from '../utils/commissionCalc.js';
+import { usePersistedState } from '../utils/usePersistedState.js';
 
 export default function CommissionCalculatorTab() {
-  const [role, setRole] = useState("BDM");
-  const [rampMonth, setRampMonth] = useState("M2+");
-  const [variablePayInput, setVariablePayInput] = useState(3000);
-  const [monthlyTarget, setMonthlyTarget] = useState(10000);
-  const [actualMRR, setActualMRR] = useState(8500);
-  const [dealCount, setDealCount] = useState(5);
-  const [currencyCode, setCurrencyCode] = useState("USD");
-  const [exchangeRate, setExchangeRate] = useState(1.0);
-  const [oneTimeRevenue, setOneTimeRevenue] = useState(2000);
-  const [enterInLocal, setEnterInLocal] = useState(false);
+  const [role, setRole] = usePersistedState("calc-role", "BDM");
+  const [rampMonth, setRampMonth] = usePersistedState("calc-rampMonth", "M2+");
+  const [variablePayInput, setVariablePayInput] = usePersistedState("calc-variablePay", 3000);
+  const [monthlyTarget, setMonthlyTarget] = usePersistedState("calc-monthlyTarget", 10000);
+  const [actualMRR, setActualMRR] = usePersistedState("calc-actualMRR", 8500);
+  const [dealCount, setDealCount] = usePersistedState("calc-dealCount", 5);
+  const [currencyCode, setCurrencyCode] = usePersistedState("calc-currencyCode", "USD");
+  const [exchangeRate, setExchangeRate] = usePersistedState("calc-exchangeRate", 1.0);
+  const [oneTimeRevenue, setOneTimeRevenue] = usePersistedState("calc-oneTimeRevenue", 2000);
+  const [enterInLocal, setEnterInLocal] = usePersistedState("calc-enterInLocal", false);
   const [calculated, setCalculated] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -79,7 +80,7 @@ export default function CommissionCalculatorTab() {
   const showHint = enterInLocal && isLocal;
   const usdHint = (val) => showHint ? (
     <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
-      ≈ {fmt(val / exchangeRate, 2)} USD
+      â {fmt(val / exchangeRate, 2)} USD
     </div>
   ) : null;
 
