@@ -27,7 +27,7 @@ export function calcBDMCommission({
   dealCount: rawDealCount, oneTimeRevenue: rawOneTimeRevenue, variablePay: rawVariablePay,
   currencyCode, exchangeRate,
 }) {
-  // Sanitize all numeric inputs — empty strings or NaN become 0
+  // Sanitize all numeric inputs â empty strings or NaN become 0
   const monthlyTarget = Number(rawMonthlyTarget) || 0;
   const actualMRR = Number(rawActualMRR) || 0;
   const dealCount = Number(rawDealCount) || 0;
@@ -167,8 +167,10 @@ export function calcBDMCommission({
     }
   }
 
-  // Performance bonus (always measured against full target)
-  const achievementVsFullTarget = (actualMRR / fullTarget) * 100;
+  // Performance bonus — for M1 ramp, measure against ramp target so OTR bonus
+  // still applies when the 50% ramp target is achieved
+  const bonusTarget = rampMonth === "M1" ? effectiveTarget : fullTarget;
+  const achievementVsFullTarget = (actualMRR / bonusTarget) * 100;
   if (oneTimeRevenue > 0) {
     if (achievementVsFullTarget >= 100) {
       result.performanceBonus = oneTimeRevenue * 0.4;
