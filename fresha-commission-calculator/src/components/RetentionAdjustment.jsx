@@ -44,7 +44,7 @@ export default function RetentionAdjustmentTab() {
   const showHint = enterInLocal && isLocal;
   const usdHint = (val) => showHint ? (
     <div style={{ fontSize: 11, color: COLORS.secondary, marginTop: -12, marginBottom: 12, paddingLeft: 2 }}>
-      â {fmt(val / exchangeRate, 2)} USD
+      ≈ {fmt(val / exchangeRate, 2)} USD
     </div>
   ) : null;
 
