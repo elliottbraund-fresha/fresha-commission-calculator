@@ -18,6 +18,9 @@ export const CURRENCIES = [
   { code: "MYR", name: "Malaysian Ringgit", symbol: "MYR", rate: 4.45 },
   { code: "QAR", name: "Qatari Riyal", symbol: "QAR", rate: 3.64 },
   { code: "OMR", name: "Omani Riyal", symbol: "OMR", rate: 0.385 },
+  { code: "HKD", name: "Hong Kong Dollar", symbol: "HKD", rate: 7.82 },
+  { code: "VND", name: "Vietnamese Dong", symbol: "VND", rate: 25450 },
+  { code: "THB", name: "Thai Baht", symbol: "THB", rate: 35.5 },
 ];
 
 export function fmt(v, decimals = 0) {
